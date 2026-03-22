@@ -1,0 +1,80 @@
+name: AutoBlog Publish
+
+on:
+  schedule:
+    # KST 기준: 07:00, 12:00, 17:00, 22:00 (UTC: 22:00, 03:00, 08:00, 13:00)
+    - cron: '0 22 * * *'   # KST 07:00
+    - cron: '0 3 * * *'    # KST 12:00
+    - cron: '0 8 * * *'    # KST 17:00
+    - cron: '0 13 * * *'   # KST 22:00
+  workflow_dispatch:
+    inputs:
+      count:
+        description: '발행 편수'
+        required: false
+        default: '3'
+      dry_run:
+        description: '드라이런 (true/false)'
+        required: false
+        default: 'false'
+      pipeline:
+        description: '파이프라인 (autoblog/hotdeal/promo)'
+        required: false
+        default: 'autoblog'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      WP_URL: ${{ secrets.WP_URL }}
+      WP_USERNAME: ${{ secrets.WP_USERNAME }}
+      WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+      GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      SITE_ID: site-1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run AutoBlog Engine
+        run: |
+          COUNT="${{ github.event.inputs.count || '3' }}"
+          DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
+          PIPELINE="${{ github.event.inputs.pipeline || 'autoblog' }}"
+          
+          ARGS="--count $COUNT --pipeline $PIPELINE"
+          if [ "$DRY_RUN" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          
+          python scripts/main.py $ARGS
+
+      - name: Commit used keywords
+        if: always()
+        run: |
+          git config user.email "bot@autoblog.com"
+          git config user.name "AutoBlog Bot"
+          git add data/used_keywords.json || true
+          git diff --staged --quiet || git commit -m "chore: update used keywords $(date +%Y-%m-%d)"
+          git push || true
