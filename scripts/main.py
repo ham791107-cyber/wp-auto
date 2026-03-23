@@ -1146,7 +1146,40 @@ def extract_title(content):
     return "자동 생성 글", content
 
 
+def _get_site_config():
+    """Supabase에서 사이트 설정 조회 (daily_target, status)"""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return None
+    import requests
+    try:
+        resp = requests.get(
+            f"{SUPABASE_URL}/rest/v1/sites?id=eq.{SITE_ID}",
+            headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+            timeout=10
+        )
+        rows = resp.json()
+        if rows and len(rows) > 0:
+            return rows[0]
+    except Exception:
+        pass
+    return None
+
+
 def run_pipeline(count=5, dry_run=False, pipeline="autoblog"):
+    # Supabase에서 사이트 설정 조회
+    site_config = _get_site_config()
+    if site_config:
+        # 일시정지 상태 확인
+        if site_config.get("status") == "paused":
+            log.info("이 사이트는 일시정지 상태입니다. 발행을 건너뜁니다.")
+            return
+
+        # 대시보드에서 설정한 daily_target 사용 (CLI 기본값일 때만)
+        db_target = site_config.get("daily_target")
+        if db_target and count == 5:  # 5는 CLI 기본값
+            count = db_target
+            log.info(f"  Supabase daily_target 적용: {count}편")
+
     log.info("=" * 60)
     log.info(f"AutoBlog Engine v6.0 시작 — {count}편 발행 예정")
     log.info(f"  파이프라인: {pipeline} | 드라이런: {dry_run}")

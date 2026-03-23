@@ -1205,10 +1205,24 @@ function SettingsTab({ siteId, sites }) {
   const site = sites.find(s => s.id === siteId);
   const [draftModel, setDraftModel] = useState('deepseek-chat');
   const [polishModel, setPolishModel] = useState('claude-sonnet-4-20250514');
+  const [siteName, setSiteName] = useState(site?.name || '');
+  const [domain, setDomain] = useState(site?.domain || '');
+  const [wpUrl, setWpUrl] = useState(site?.wp_url || '');
   const [target, setTarget] = useState(site?.daily_target || 10);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [paused, setPaused] = useState(false);
+  const [paused, setPaused] = useState(site?.status === 'paused');
+
+  // 사이트 변경 시 필드 동기화
+  useEffect(() => {
+    if (site) {
+      setSiteName(site.name || '');
+      setDomain(site.domain || '');
+      setWpUrl(site.wp_url || '');
+      setTarget(site.daily_target || 10);
+      setPaused(site.status === 'paused');
+    }
+  }, [site]);
 
   const draft = DRAFT_MODELS.find(m => m.id === draftModel) || DRAFT_MODELS[0];
   const polish = POLISH_MODELS.find(m => m.id === polishModel) || POLISH_MODELS[0];
@@ -1217,8 +1231,12 @@ function SettingsTab({ siteId, sites }) {
   const handleSave = async () => {
     setSaving(true);
     await supabase.from('sites').update({
-      ai_config: { draft_model: draftModel, polish_model: polishModel },
+      name: siteName,
+      domain: domain,
+      wp_url: wpUrl,
       daily_target: target,
+      status: paused ? 'paused' : 'active',
+      ai_config: { draft_model: draftModel, polish_model: polishModel },
       updated_at: new Date().toISOString()
     }).eq('id', siteId);
     setSaving(false);
@@ -1323,28 +1341,55 @@ function SettingsTab({ siteId, sites }) {
         <SectionTitle>사이트 설정</SectionTitle>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label style={{ fontSize: 12, color: '#94a3b8', display: 'block', marginBottom: 4, fontWeight: 500 }}>사이트 이름</label>
-            <div style={{ fontSize: 14, fontWeight: 500, color: '#1a1a2e' }}>{site?.name || '-'}</div>
+            <label style={{ fontSize: 12, color: '#94a3b8', display: 'block', marginBottom: 6, fontWeight: 500 }}>사이트 이름</label>
+            <input value={siteName} onChange={e => setSiteName(e.target.value)} placeholder="블로그 이름"
+              style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10,
+                padding: '10px 14px', color: '#1a1a2e', fontSize: 14, width: '100%', fontWeight: 500, outline: 'none' }} />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#94a3b8', display: 'block', marginBottom: 4, fontWeight: 500 }}>도메인</label>
-            <div style={{ fontSize: 14, fontWeight: 500, color: '#1a1a2e' }}>{site?.domain || '-'}</div>
+            <label style={{ fontSize: 12, color: '#94a3b8', display: 'block', marginBottom: 6, fontWeight: 500 }}>도메인</label>
+            <input value={domain} onChange={e => setDomain(e.target.value)} placeholder="example.com"
+              style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10,
+                padding: '10px 14px', color: '#1a1a2e', fontSize: 14, width: '100%', fontWeight: 500, outline: 'none' }} />
+          </div>
+          <div>
+            <label style={{ fontSize: 12, color: '#94a3b8', display: 'block', marginBottom: 6, fontWeight: 500 }}>WordPress API URL</label>
+            <input value={wpUrl} onChange={e => setWpUrl(e.target.value)} placeholder="https://example.com/wp-json/wp/v2"
+              style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10,
+                padding: '10px 14px', color: '#1a1a2e', fontSize: 13, width: '100%', fontWeight: 500, outline: 'none',
+                fontFamily: 'monospace' }} />
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>GitHub Secrets의 WP_URL과 동일하게 입력하세요</div>
           </div>
           <div>
             <label style={{ fontSize: 12, color: '#94a3b8', display: 'block', marginBottom: 6, fontWeight: 500 }}>일일 발행 목표</label>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <input type="number" value={target} onChange={e => setTarget(Number(e.target.value))}
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              {[1, 3, 5, 10, 15, 20].map(n => (
+                <PillButton key={n} selected={target === n} onClick={() => setTarget(n)}>
+                  {n}편
+                </PillButton>
+              ))}
+              <input type="number" value={target} onChange={e => setTarget(Number(e.target.value))} min={1} max={50}
                 style={{
                   background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10,
-                  padding: '10px 14px', color: '#1a1a2e', fontSize: 14, width: 100, fontWeight: 600
+                  padding: '8px 12px', color: '#1a1a2e', fontSize: 13, width: 70, fontWeight: 600, textAlign: 'center', outline: 'none'
                 }} />
-              <span style={{ fontSize: 13, color: '#94a3b8' }}>편/일</span>
+              <span style={{ fontSize: 12, color: '#94a3b8' }}>편/일</span>
+            </div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>
+              월 예상: {target * 30}편 · 월 예상 비용: {fmtKRW(totalCost * target * 30)}
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0' }}>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '12px 14px', borderRadius: 10,
+            background: paused ? 'rgba(239,68,68,0.04)' : '#f8fafc',
+            border: paused ? '1px solid rgba(239,68,68,0.15)' : '1px solid #e2e8f0'
+          }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e' }}>발행 일시정지</div>
-              <div style={{ fontSize: 11, color: '#94a3b8' }}>ON 시 이 사이트 발행을 중단합니다</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: paused ? '#ef4444' : '#1a1a2e' }}>
+                발행 일시정지 {paused && '(중단됨)'}
+              </div>
+              <div style={{ fontSize: 11, color: '#94a3b8' }}>ON 시 이 사이트의 자동 발행을 중단합니다</div>
             </div>
             <Toggle on={paused} set={setPaused} />
           </div>
