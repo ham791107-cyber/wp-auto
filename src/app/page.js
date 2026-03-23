@@ -76,16 +76,50 @@ const AFF_GLOBAL = [
 ];
 
 const INIT_SAAS = [
-  { name: 'Jasper AI', cat: '글쓰기', comm: '25% 반복 12개월', url: '' },
-  { name: 'Writesonic', cat: '글쓰기', comm: '30% 평생', url: '' },
-  { name: 'Koala AI', cat: 'SEO', comm: '30% 평생', url: '' },
-  { name: 'Synthesia', cat: 'AI영상', comm: '25% 반복', url: '' },
-  { name: 'ElevenLabs', cat: '음성', comm: '22%', url: '' },
-  { name: 'GetResponse', cat: '이메일', comm: '40~60%', url: '' },
-  { name: 'HubSpot', cat: 'CRM', comm: '30% 12개월', url: '' },
-  { name: 'Surfer SEO', cat: 'SEO', comm: '25% 반복', url: '' },
+  // AI 글쓰기/콘텐츠
+  { name: 'Jasper AI', cat: 'AI글쓰기', comm: '30% 평생반복', url: '' },
+  { name: 'Writesonic', cat: 'AI글쓰기', comm: '30% 평생반복', url: '' },
+  { name: 'Copy.ai', cat: 'AI글쓰기', comm: '45% 1년반복', url: '' },
+  { name: 'Koala AI', cat: 'AI글쓰기', comm: '30% 평생반복', url: '' },
+  // AI 영상/음성
+  { name: 'Synthesia', cat: 'AI영상', comm: '20% 12개월', url: '' },
+  { name: 'ElevenLabs', cat: 'AI음성', comm: '22% 12개월', url: '' },
+  { name: 'Descript', cat: 'AI영상', comm: '$25/건', url: '' },
+  // SEO 도구
+  { name: 'Surfer SEO', cat: 'SEO', comm: '최대125% 1회', url: '' },
   { name: 'Semrush', cat: 'SEO', comm: '$200/건', url: '' },
+  { name: 'Mangools', cat: 'SEO', comm: '35% 평생반복', url: '' },
+  // 이메일 마케팅
+  { name: 'GetResponse', cat: '이메일', comm: '33~50% 반복', url: '' },
+  { name: 'Kit(ConvertKit)', cat: '이메일', comm: '50% 12개월', url: '' },
+  { name: 'Beehiiv', cat: '이메일', comm: '50% 12개월', url: '' },
+  // CRM/마케팅
+  { name: 'HubSpot', cat: 'CRM', comm: '30% 12개월', url: '' },
+  { name: 'ActiveCampaign', cat: 'CRM', comm: '15~25% 반복', url: '' },
+  // 호스팅/클라우드
+  { name: 'Cloudways', cat: '호스팅', comm: '$30+7% 평생', url: '' },
+  { name: 'Hostinger', cat: '호스팅', comm: '40%+ 1회', url: '' },
+  { name: 'Railway', cat: '클라우드', comm: '15% 12개월', url: '' },
+  // 디자인
   { name: 'Canva', cat: '디자인', comm: '$36/건', url: '' },
+  { name: 'Adobe', cat: '디자인', comm: '최대85% 1회', url: '' },
+  // 프로젝트 관리
+  { name: 'Notion', cat: '생산성', comm: '50% 12개월', url: '' },
+  { name: 'Monday.com', cat: '생산성', comm: '최대100% 1년', url: '' },
+  { name: 'ClickUp', cat: '생산성', comm: '20%/$25', url: '' },
+  // VPN/보안
+  { name: 'NordVPN', cat: 'VPN', comm: '100%+30% 반복', url: '' },
+  { name: 'Surfshark', cat: 'VPN', comm: '40% RevShare', url: '' },
+  // 교육
+  { name: 'Teachable', cat: '교육', comm: '30% 12개월', url: '' },
+  { name: 'Thinkific', cat: '교육', comm: '30% 평생반복', url: '' },
+  // 금융
+  { name: 'Wise', cat: '금융', comm: 'GBP10~50/건', url: '' },
+  { name: 'Payoneer', cat: '금융', comm: '$25/건', url: '' },
+  // 소셜미디어
+  { name: 'Buffer', cat: 'SNS관리', comm: '25% 12개월', url: '' },
+  // SaaS 할인 마켓
+  { name: 'JoinSecret', cat: 'SaaS딜', comm: '30% 평생반복', url: '' },
 ];
 
 const AI_MODELS_API = [
