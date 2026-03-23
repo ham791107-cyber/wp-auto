@@ -114,15 +114,274 @@ class KeywordManager:
 
 
 # ═══════════════════════════════════════════════════════
+# 1-B. 동적 키워드 생성 — 니치 기반 AI 키워드 (다양성 보장)
+# ═══════════════════════════════════════════════════════
+
+# 콘텐츠 앵글 (모든 니치에 공통 적용)
+CONTENT_ANGLES = [
+    "소개/개요", "활용법/사용 가이드", "수익화 방법", "비교/대안 분석",
+    "조합 시너지", "월간 Top 순위", "카테고리별 순위", "초보 입문 가이드",
+    "고급 활용 팁", "무료 vs 유료 비교", "트렌드/최신 동향", "실제 사례/후기",
+    "문제 해결/트러블슈팅", "비용 절감 방법", "자동화 연계", "업데이트 소식",
+]
+
+# 콘텐츠 포맷
+CONTENT_FORMATS = [
+    "리스트형 (N가지 방법)", "비교표 (A vs B)", "스텝 가이드 (1단계→2단계)",
+    "사례 연구 (실제 결과)", "Q&A형 (자주 묻는 질문)", "체크리스트형",
+    "타임라인형 (변화 추이)", "인포그래픽형 (데이터 중심)",
+]
+
+# 타겟 독자
+TARGET_READERS = [
+    "직장인", "프리랜서", "학생", "마케터", "개발자", "크리에이터",
+    "소상공인", "투자자", "주부", "시니어", "취준생", "부업러",
+]
+
+# 니치별 도메인 키워드 (AI가 조합에 사용)
+NICHE_DOMAINS = {
+    "ai-tools": ["ChatGPT", "Claude", "Gemini", "Midjourney", "Cursor", "NotebookLM", "Perplexity", "Copilot", "Suno", "Gamma", "Descript", "Runway"],
+    "tech": ["노트북", "태블릿", "스마트폰", "모니터", "키보드", "마우스", "웹캠", "SSD", "공유기", "NAS"],
+    "smart-home": ["스마트스피커", "로봇청소기", "스마트조명", "홈카메라", "스마트도어락", "에어컨자동화"],
+    "pet": ["강아지", "고양이", "사료", "건강관리", "보험", "훈련", "용품"],
+    "appliance": ["에어컨", "제습기", "공기청정기", "건조기", "식기세척기", "전기밥솥"],
+    "beauty": ["스킨케어", "선크림", "파운데이션", "헤어케어", "뷰티디바이스", "성분분석"],
+    "health": ["영양제", "다이어트", "운동루틴", "수면", "스트레스관리", "건강검진"],
+    "baby": ["분유", "기저귀", "카시트", "유모차", "이유식", "장난감"],
+    "fitness": ["홈트레이닝", "러닝머신", "덤벨", "요가매트", "스마트워치", "보충제"],
+    "finance": ["적금", "ETF", "주식", "대출", "보험", "연금", "절세", "부동산"],
+    "education": ["온라인강의", "자격증", "영어", "코딩교육", "독서법", "생산성앱"],
+    "news-sbs": ["SBS뉴스", "경제", "정치", "사회", "국제"],
+    "news-kbs": ["KBS뉴스", "시사", "경제동향"],
+    "news-jtbc": ["JTBC뉴스", "팩트체크", "시사"],
+    "news-mbc": ["MBC뉴스", "탐사보도", "시사"],
+    "sns-trend": ["트위터트렌드", "인스타그램", "틱톡", "유튜브", "바이럴"],
+    "top10-corp": ["삼성", "SK", "현대", "LG", "롯데", "포스코", "한화", "GS", "두산", "CJ"],
+    "s-semi": ["삼성전자", "SK하이닉스", "TSMC", "ASML", "엔비디아", "HBM", "파운드리"],
+    "s-ai": ["GPU", "LLM", "AI반도체", "엣지AI", "AI에이전트", "AI스타트업"],
+    "s-defense": ["한화에어로", "LIG넥스원", "현대로템", "KAI", "방산수출"],
+    "s-pharma": ["바이오시밀러", "셀트리온", "삼성바이오", "임상시험", "신약개발"],
+    "s-chem": ["2차전지소재", "양극재", "전해액", "LG화학", "포스코케미칼"],
+    "s-robot": ["협동로봇", "자율주행", "로봇청소기", "산업용로봇", "휴머노이드"],
+    "s-security": ["제로트러스트", "클라우드보안", "랜섬웨어", "개인정보보호"],
+    "s-enter": ["K-POP", "OTT", "드라마", "웹툰", "게임", "엔터주"],
+    "s-ev": ["전기차", "배터리", "충전인프라", "LFP", "전고체"],
+    "s-space": ["누리호", "스타링크", "위성통신", "우주관광"],
+    "gov-support": ["정부보조금", "청년정책", "소상공인지원", "창업지원", "고용보험"],
+    "tax-guide": ["종합소득세", "부가세", "연말정산", "세금환급", "절세전략"],
+    "agency": ["고용노동부", "중소벤처기업부", "국세청", "금융위원회"],
+    "event": ["CES", "MWC", "컨퍼런스", "세미나", "해커톤", "전시회"],
+    "travel": ["항공권", "호텔", "패키지", "자유여행", "비자", "여행보험"],
+    "keyword-collect": ["네이버트렌드", "구글트렌드", "키워드플래너", "롱테일키워드"],
+    "niche-promo": ["브랜드스토리", "제품리뷰", "체험단", "인플루언서"],
+    "brand": ["브랜딩", "콘텐츠마케팅", "SNS마케팅", "퍼포먼스마케팅"],
+    "compare-land": ["가격비교", "스펙비교", "장단점분석", "사용자리뷰"],
+}
+
+KEYWORD_GEN_PROMPT = """당신은 블로그 키워드 전략가입니다.
+아래 조건에 맞는 블로그 글 주제를 {count}개 생성하세요.
+
+니치: {niche}
+콘텐츠 앵글: {angle}
+콘텐츠 포맷: {format}
+타겟 독자: {target}
+관련 도메인 키워드: {domains}
+
+=== 반드시 지켜야 할 규칙 ===
+1. 각 주제는 검색 가능한 구체적 키워드여야 합니다
+2. 아래 "이미 발행된 제목"과 동일하거나 유사한 주제는 절대 금지
+3. 고유 시드 "{seed}"를 활용하여 독창적인 관점을 포함하세요
+4. 한국어로 작성, 2026년 기준 최신 정보
+
+=== 이미 발행된 제목 (피해야 할 주제) ===
+{used_titles}
+
+=== 출력 형식 (JSON 배열만 출력) ===
+[
+  {{"keyword": "구체적 키워드", "intent": "informational 또는 transactional", "category": "블로그 카테고리명"}},
+  ...
+]
+"""
+
+
+class DynamicKeywordGenerator:
+    """니치 기반 AI 동적 키워드 생성기 — 다양성 보장 알고리즘"""
+
+    def __init__(self):
+        self.used_titles = self._fetch_used_titles()
+
+    def _fetch_used_titles(self):
+        """Supabase에서 최근 발행 제목 가져오기 (중복 방지용)"""
+        if not SUPABASE_URL or not SUPABASE_KEY:
+            return []
+        import requests
+        try:
+            resp = requests.get(
+                f"{SUPABASE_URL}/rest/v1/publish_logs?select=title&order=published_at.desc&limit=200",
+                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+                timeout=10
+            )
+            rows = resp.json()
+            return [r["title"] for r in (rows or []) if r.get("title")]
+        except Exception:
+            return []
+
+    def _get_dashboard_niches(self):
+        """Supabase dashboard_config에서 선택된 니치 가져오기"""
+        if not SUPABASE_URL or not SUPABASE_KEY:
+            return []
+        import requests
+        try:
+            resp = requests.get(
+                f"{SUPABASE_URL}/rest/v1/dashboard_config?id=eq.global",
+                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+                timeout=10
+            )
+            rows = resp.json()
+            if rows and len(rows) > 0:
+                settings = rows[0].get("settings", {})
+                return settings.get("selNiches", [])
+        except Exception:
+            pass
+        return []
+
+    def generate(self, count=5):
+        """선택된 니치에서 다양한 키워드 동적 생성"""
+        niches = self._get_dashboard_niches()
+        if not niches:
+            log.info("  대시보드 니치 미선택 — 정적 키워드 폴백")
+            return None  # 폴백: 기존 KeywordManager 사용
+
+        log.info(f"  동적 키워드 생성 — 니치: {niches}")
+
+        # 다양성 알고리즘: 니치별로 분배
+        per_niche = max(1, count // len(niches))
+        remainder = count - per_niche * len(niches)
+
+        all_keywords = []
+        for i, niche in enumerate(niches):
+            n = per_niche + (1 if i < remainder else 0)
+            kws = self._generate_for_niche(niche, n)
+            all_keywords.extend(kws)
+
+        random.shuffle(all_keywords)
+        return all_keywords[:count]
+
+    def _generate_for_niche(self, niche, count):
+        """단일 니치에서 고유 키워드 생성"""
+        # 다양성 요소 랜덤 선택
+        angle = random.choice(CONTENT_ANGLES)
+        fmt = random.choice(CONTENT_FORMATS)
+        target = random.choice(TARGET_READERS)
+        domains = NICHE_DOMAINS.get(niche, ["일반"])
+        random.shuffle(domains)
+        domain_str = ", ".join(domains[:5])
+
+        # 고유 시드: site_id + niche + timestamp + random
+        seed = hashlib.md5(
+            f"{SITE_ID}-{niche}-{datetime.now(KST).isoformat()}-{random.random()}".encode()
+        ).hexdigest()[:12]
+
+        # 최근 발행 제목 (최대 30개)
+        used_str = "\n".join(f"- {t}" for t in self.used_titles[:30]) or "(없음)"
+
+        prompt = KEYWORD_GEN_PROMPT.format(
+            count=count, niche=niche, angle=angle, format=fmt,
+            target=target, domains=domain_str, seed=seed, used_titles=used_str
+        )
+
+        # AI로 키워드 생성 (가장 저렴한 모델 사용)
+        keywords_json = self._call_ai(prompt)
+        if not keywords_json:
+            return []
+
+        try:
+            # JSON 추출
+            text = keywords_json.strip()
+            start = text.find("[")
+            end = text.rfind("]") + 1
+            if start >= 0 and end > start:
+                parsed = json.loads(text[start:end])
+                result = []
+                for kw in parsed:
+                    kw["niche"] = niche
+                    kw["pipeline"] = "autoblog"
+                    kw["type"] = "traffic" if kw.get("intent") == "informational" else "conversion"
+                    kw["_angle"] = angle
+                    kw["_format"] = fmt
+                    kw["_target"] = target
+                    kw["_seed"] = seed
+                    result.append(kw)
+                log.info(f"  [{niche}] {len(result)}개 키워드 생성: {[k['keyword'][:20] for k in result]}")
+                return result
+        except (json.JSONDecodeError, KeyError, TypeError) as e:
+            log.warning(f"  [{niche}] 키워드 파싱 실패: {e}")
+        return []
+
+    def _call_ai(self, prompt):
+        """가장 저렴한 AI 모델로 키워드 생성"""
+        import requests
+
+        # 1순위: Gemini (무료)
+        if GEMINI_KEY:
+            try:
+                resp = requests.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}",
+                    headers={"Content-Type": "application/json"},
+                    json={"contents": [{"parts": [{"text": prompt}]}],
+                          "generationConfig": {"temperature": 1.0, "maxOutputTokens": 2000}},
+                    timeout=30
+                )
+                resp.raise_for_status()
+                return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+            except Exception:
+                pass
+
+        # 2순위: DeepSeek (저렴)
+        if DEEPSEEK_KEY:
+            try:
+                resp = requests.post(
+                    "https://api.deepseek.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {DEEPSEEK_KEY}", "Content-Type": "application/json"},
+                    json={"model": "deepseek-chat", "messages": [{"role": "user", "content": prompt}],
+                          "temperature": 1.0, "max_tokens": 2000},
+                    timeout=30
+                )
+                resp.raise_for_status()
+                return resp.json()["choices"][0]["message"]["content"]
+            except Exception:
+                pass
+
+        # 3순위: Grok
+        if GROK_KEY:
+            try:
+                resp = requests.post(
+                    "https://api.x.ai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {GROK_KEY}", "Content-Type": "application/json"},
+                    json={"model": "grok-3-mini", "messages": [{"role": "user", "content": prompt}],
+                          "temperature": 1.0, "max_tokens": 2000},
+                    timeout=30
+                )
+                resp.raise_for_status()
+                return resp.json()["choices"][0]["message"]["content"]
+            except Exception:
+                pass
+
+        log.warning("  키워드 생성 AI 호출 실패")
+        return None
+
+
+# ═══════════════════════════════════════════════════════
 # 2. AI 글 생성 — 멀티모델 라우팅 + AdSense 최적화 프롬프트
 # ═══════════════════════════════════════════════════════
 
-DRAFT_PROMPT = """당신은 한국 최고의 금융·실용정보 블로거입니다.
+DRAFT_PROMPT = """당신은 한국 최고의 전문 블로거입니다.
 10년 경력의 전문 필진처럼 깊이 있고 실용적인 글을 씁니다.
 
 키워드: {keyword}
 검색의도: {intent}
 카테고리: {category}
+고유코드: {unique_seed}
 
 === 작성 규칙 (AdSense 승인 최적화) ===
 1. 제목: 호기심+구체성 (숫자, 비교, 의문문 활용). <title> 태그로 감싸기
@@ -178,9 +437,13 @@ class ContentGenerator:
         "claude-haiku-4-5-20241022": {"input": 0.001, "output": 0.005},
     }
 
-    def generate(self, keyword, intent="informational", category=""):
+    def generate(self, keyword, intent="informational", category="", unique_seed=""):
         """멀티모델 폴체인: Grok→Gemini→DeepSeek (초안) + Claude (폴리싱)"""
-        prompt = DRAFT_PROMPT.format(keyword=keyword, intent=intent, category=category)
+        if not unique_seed:
+            unique_seed = hashlib.md5(
+                f"{SITE_ID}-{keyword}-{datetime.now(KST).isoformat()}-{random.random()}".encode()
+            ).hexdigest()[:12]
+        prompt = DRAFT_PROMPT.format(keyword=keyword, intent=intent, category=category, unique_seed=unique_seed)
 
         draft = None
         draft_model = None
@@ -1224,6 +1487,7 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None
         check_api_status()
 
     km = KeywordManager()
+    dkg = DynamicKeywordGenerator()
     cg = ContentGenerator()
     im = ImageManager()
     am = AffiliateManager()
@@ -1233,7 +1497,14 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None
     wp = WordPressPublisher()
     sb = SupabaseLogger()
 
-    keywords = km.select(count=count, pipeline=pipeline)
+    # 1순위: 대시보드 니치 기반 동적 키워드 생성
+    keywords = dkg.generate(count=count)
+
+    # 2순위: 정적 keywords.json 폴백
+    if not keywords:
+        log.info("  정적 키워드 폴백 사용")
+        keywords = km.select(count=count, pipeline=pipeline)
+
     if not keywords:
         log.error("사용 가능한 키워드 없음!")
         sb.log_alert("키워드 소진", "사용 가능한 키워드가 없습니다.", "critical", "keyword_exhausted")
@@ -1251,13 +1522,16 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None
         intent = kw_data.get("intent", "informational")
         category = kw_data.get("category", "")
         kw_type = kw_data.get("type", "traffic")
+        unique_seed = kw_data.get("_seed", "")
 
         log.info(f"\n{'='*50}")
         log.info(f"[{i}/{len(keywords)}] '{keyword}' ({kw_type})")
+        if kw_data.get("_angle"):
+            log.info(f"  앵글: {kw_data['_angle']} / 포맷: {kw_data.get('_format', '')} / 타겟: {kw_data.get('_target', '')}")
         log.info(f"{'='*50}")
 
         # Step 1: AI 글 생성
-        content, cost_usd, content_length = cg.generate(keyword, intent, category)
+        content, cost_usd, content_length = cg.generate(keyword, intent, category, unique_seed)
         if not content:
             fail += 1
             sb.log_publish({"keyword": keyword, "status": "failed",

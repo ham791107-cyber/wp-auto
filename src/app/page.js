@@ -749,6 +749,42 @@ function NicheTab({ selNiches, toggleNiche }) {
           })}
         </div>
       </Card>
+
+      {/* 콘텐츠 앵글 & 다양성 설명 */}
+      {selNiches.length > 0 && (
+        <Card>
+          <SectionTitle>콘텐츠 다양성 엔진</SectionTitle>
+          <p style={{ fontSize: 12, color: '#4a5568', marginTop: -8, marginBottom: 14 }}>
+            선택한 니치에서 아래 요소를 자동 조합하여 매번 고유한 키워드를 AI가 생성합니다.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 6 }}>콘텐츠 앵글 (16종 랜덤)</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {['소개/개요', '활용법', '수익화', '비교/대안', '조합 시너지', '월간 Top', '카테고리 순위', '초보 가이드',
+                  '고급 활용', '무료vs유료', '트렌드', '사례/후기', '문제해결', '비용절감', '자동화', '업데이트'].map(a => (
+                  <span key={a} style={{ fontSize: 10, padding: '3px 8px', borderRadius: 6, background: '#f1f5f9', color: '#4a5568' }}>{a}</span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 6 }}>콘텐츠 포맷 (8종 랜덤)</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {['리스트형', '비교표', '스텝가이드', '사례연구', 'Q&A형', '체크리스트', '타임라인', '데이터중심'].map(f => (
+                  <span key={f} style={{ fontSize: 10, padding: '3px 8px', borderRadius: 6, background: '#f1f5f9', color: '#4a5568' }}>{f}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.1)' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#10b981' }}>다양성 보장 알고리즘</div>
+            <div style={{ fontSize: 11, color: '#4a5568', marginTop: 4 }}>
+              앵글(16) × 포맷(8) × 타겟독자(12) × 니치 도메인 키워드 = <strong>수천 가지 조합</strong>
+              <br />+ 사이트별 고유 시드 + 발행 이력 중복 체크 → 20명이 같은 니치를 선택해도 동일 글 불가
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
