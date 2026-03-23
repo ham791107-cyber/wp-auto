@@ -41,6 +41,13 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
 SITE_ID = os.environ.get("SITE_ID", "site-1")
 
+# 네이버 카페 API
+NAVER_CLIENT_ID = os.environ.get("NAVER_CLIENT_ID", "")
+NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET", "")
+NAVER_REFRESH_TOKEN = os.environ.get("NAVER_REFRESH_TOKEN", "")
+NAVER_CAFE_CLUBID = os.environ.get("NAVER_CAFE_CLUBID", "")
+NAVER_CAFE_MENUID = os.environ.get("NAVER_CAFE_MENUID", "")
+
 KST = timezone(timedelta(hours=9))
 
 
@@ -938,6 +945,7 @@ class SupabaseLogger:
                 "image_tier": data.get("image_source", ""),
                 "has_coupang": data.get("has_coupang", False),
                 "quality_score": data.get("quality_score", 0),
+                "sns_shared": json.dumps(data.get("sns_shared", [])),
                 "status": data.get("status", "published"),
                 "error_message": data.get("error_message", ""),
                 "published_at": datetime.now(KST).isoformat(),
@@ -966,7 +974,165 @@ class SupabaseLogger:
 
 
 # ═══════════════════════════════════════════════════════
-# 10. 메인 파이프라인
+# 10. 네이버 카페 자동 공유
+# ═══════════════════════════════════════════════════════
+class NaverCafePublisher:
+    """네이버 카페 API로 글 자동 공유.
+    OAuth 2.0 Refresh Token으로 Access Token 자동 갱신."""
+
+    TOKEN_URL = "https://nid.naver.com/oauth2.0/token"
+    CAFE_API = "https://openapi.naver.com/v1/cafe/{clubid}/menu/{menuid}/articles"
+
+    def __init__(self):
+        self.access_token = None
+        self.clubid = NAVER_CAFE_CLUBID
+        self.menuid = NAVER_CAFE_MENUID
+
+    def is_configured(self):
+        return all([NAVER_CLIENT_ID, NAVER_CLIENT_SECRET, NAVER_REFRESH_TOKEN,
+                    self.clubid, self.menuid])
+
+    def _refresh_access_token(self):
+        """Refresh Token으로 새 Access Token 발급"""
+        import requests
+        try:
+            resp = requests.post(self.TOKEN_URL, params={
+                "grant_type": "refresh_token",
+                "client_id": NAVER_CLIENT_ID,
+                "client_secret": NAVER_CLIENT_SECRET,
+                "refresh_token": NAVER_REFRESH_TOKEN,
+            }, timeout=10)
+            data = resp.json()
+            if "access_token" in data:
+                self.access_token = data["access_token"]
+                log.info("  네이버 Access Token 갱신 완료")
+                return True
+            else:
+                log.warning(f"  네이버 토큰 갱신 실패: {data.get('error_description', data)}")
+                return False
+        except Exception as e:
+            log.warning(f"  네이버 토큰 갱신 실패: {e}")
+            return False
+
+    def publish(self, title, content, wp_url=""):
+        """카페에 글 공유. HTML 콘텐츠를 그대로 전송."""
+        import requests
+        import urllib.parse
+
+        if not self.is_configured():
+            return None
+
+        if not self.access_token:
+            if not self._refresh_access_token():
+                return None
+
+        url = self.CAFE_API.format(clubid=self.clubid, menuid=self.menuid)
+
+        # 원문 링크 추가
+        footer = ""
+        if wp_url:
+            footer = (
+                f'\n<p style="margin-top:24px;padding-top:16px;border-top:1px solid #eee;'
+                f'font-size:13px;color:#888;">'
+                f'원문: <a href="{wp_url}" target="_blank">{wp_url}</a></p>'
+            )
+
+        cafe_content = content + footer
+
+        try:
+            resp = requests.post(
+                url,
+                headers={"Authorization": f"Bearer {self.access_token}"},
+                data={
+                    "subject": urllib.parse.quote(title),
+                    "content": urllib.parse.quote(cafe_content),
+                    "openyn": "true",
+                    "searchopen": "true",
+                    "replyyn": "true",
+                },
+                timeout=15
+            )
+
+            if resp.status_code == 200:
+                result = resp.json()
+                article_url = result.get("message", {}).get("result", {}).get("articleUrl", "")
+                log.info(f"  네이버 카페 공유 완료: {article_url}")
+                return article_url
+            elif resp.status_code == 401:
+                # 토큰 만료 → 재발급 후 재시도
+                log.info("  네이버 토큰 만료, 재발급 시도...")
+                if self._refresh_access_token():
+                    return self.publish(title, content, wp_url)
+                return None
+            else:
+                log.warning(f"  네이버 카페 공유 실패: {resp.status_code} {resp.text[:200]}")
+                return None
+        except Exception as e:
+            log.warning(f"  네이버 카페 공유 실패: {e}")
+            return None
+
+
+# ═══════════════════════════════════════════════════════
+# 11. API 상태 체크 — Supabase에 연결 상태 기록
+# ═══════════════════════════════════════════════════════
+def check_api_status():
+    """모든 API 키 설정 상태를 확인하고 Supabase에 기록"""
+    status = {
+        "last_checked": datetime.now(KST).isoformat(),
+        "wp": bool(WP_URL and WP_USER and WP_PASS),
+        "deepseek": bool(DEEPSEEK_KEY),
+        "claude": bool(CLAUDE_KEY),
+        "grok": bool(GROK_KEY),
+        "gemini": bool(GEMINI_KEY),
+        "pexels": bool(PEXELS_KEY),
+        "pixabay": bool(PIXABAY_KEY),
+        "unsplash": bool(UNSPLASH_KEY),
+        "supabase": bool(SUPABASE_URL and SUPABASE_KEY),
+        "naver_cafe": bool(NAVER_CLIENT_ID and NAVER_CLIENT_SECRET and NAVER_REFRESH_TOKEN
+                           and NAVER_CAFE_CLUBID and NAVER_CAFE_MENUID),
+    }
+
+    log.info("API 상태 체크:")
+    for name, ok in status.items():
+        if name == "last_checked":
+            continue
+        log.info(f"  {name}: {'OK' if ok else 'X'}")
+
+    # Supabase에 기록
+    if SUPABASE_URL and SUPABASE_KEY:
+        import requests
+        try:
+            # 기존 설정 가져오기
+            resp = requests.get(
+                f"{SUPABASE_URL}/rest/v1/dashboard_config?id=eq.global",
+                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+                timeout=10
+            )
+            existing = {}
+            rows = resp.json()
+            if rows and len(rows) > 0:
+                existing = rows[0].get("settings", {})
+
+            existing["api_status"] = status
+
+            requests.patch(
+                f"{SUPABASE_URL}/rest/v1/dashboard_config?id=eq.global",
+                headers={
+                    "apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}",
+                    "Content-Type": "application/json", "Prefer": "return=minimal"
+                },
+                json={"settings": existing, "updated_at": datetime.now(KST).isoformat()},
+                timeout=10
+            )
+            log.info("  API 상태 Supabase 기록 완료")
+        except Exception as e:
+            log.warning(f"  API 상태 기록 실패: {e}")
+
+    return status
+
+
+# ═══════════════════════════════════════════════════════
+# 12. 메인 파이프라인
 # ═══════════════════════════════════════════════════════
 def extract_title(content):
     match = re.search(r"<title>(.*?)</title>", content, re.IGNORECASE)
@@ -988,7 +1154,11 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog"):
     log.info(f"  이미지: Pexels{'(O)' if PEXELS_KEY else '(X)'} → "
              f"Pixabay{'(O)' if PIXABAY_KEY else '(X)'} → "
              f"Unsplash{'(O)' if UNSPLASH_KEY else '(X)'}")
+    log.info(f"  네이버 카페: {'(O)' if NAVER_REFRESH_TOKEN else '(X)'}")
     log.info("=" * 60)
+
+    # API 상태 체크 (매 실행 시)
+    check_api_status()
 
     km = KeywordManager()
     cg = ContentGenerator()
@@ -996,6 +1166,7 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog"):
     am = AffiliateManager()
     ao = AdSenseOptimizer()
     qg = QualityGate()
+    nc = NaverCafePublisher()
     wp = WordPressPublisher()
     sb = SupabaseLogger()
 
@@ -1077,6 +1248,13 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog"):
             km.mark_used(keyword)
             success += 1
 
+            # Step 8: 네이버 카페 자동 공유
+            sns_shared = []
+            if nc.is_configured():
+                cafe_url = nc.publish(title, content, wp_url=result.get("url", ""))
+                if cafe_url:
+                    sns_shared.append("naver_cafe")
+
             sb.log_publish({
                 "title": title, "url": result.get("url", ""),
                 "keyword": keyword, "intent": intent, "category": category,
@@ -1084,6 +1262,7 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog"):
                 "has_image": has_image, "image_source": image_source,
                 "has_coupang": has_coupang,
                 "quality_score": quality_score,
+                "sns_shared": sns_shared,
                 "status": "published"
             })
         else:
@@ -1139,9 +1318,15 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="발행 없이 테스트")
     parser.add_argument("--pipeline", default="autoblog", help="파이프라인 (autoblog/hotdeal/promo)")
     parser.add_argument("--setup-pages", action="store_true", help="AdSense 필수 페이지 자동 생성")
+    parser.add_argument("--check-status", action="store_true", help="API 연결 상태 체크 → Supabase 기록")
     parser.add_argument("--site-name", default="", help="사이트 이름 (필수 페이지용)")
     parser.add_argument("--email", default="contact@example.com", help="연락처 이메일")
     args = parser.parse_args()
+
+    # API 상태 체크 모드
+    if args.check_status:
+        check_api_status()
+        sys.exit(0)
 
     # 필수 페이지 생성 모드
     if args.setup_pages:

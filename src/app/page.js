@@ -387,7 +387,7 @@ export default function Dashboard() {
     affKeys, setAffKey, saas, updateSaas, addSaas, rmSaas,
     apiKeys, setApi, snsOn, toggleSns, adChecks, toggleAd,
     lang, setLang, autoMode, setAutoMode,
-    adPct, connectedAff, connectedApi, snsCount, sites,
+    adPct, connectedAff, connectedApi, snsCount, sites, savedConfig,
   };
 
   return (
@@ -824,9 +824,54 @@ function MoneyTab({ affKeys, setAffKey, saas, updateSaas, addSaas, rmSaas }) {
 // TAB 5: API / INTEGRATION
 // ═══════════════════════════════════════════
 
-function ApiTab({ apiKeys, setApi, snsOn, toggleSns }) {
+function ApiTab({ apiKeys, setApi, snsOn, toggleSns, savedConfig }) {
+  const apiStatus = savedConfig?.api_status || {};
+  const lastChecked = apiStatus.last_checked ? new Date(apiStatus.last_checked).toLocaleString('ko-KR') : '확인 안됨';
+
+  const STATUS_MAP = [
+    { key: 'wp', label: 'WordPress', desc: 'WP_URL + WP_USERNAME + WP_APP_PASSWORD' },
+    { key: 'grok', label: 'Grok', desc: 'GROK_API_KEY' },
+    { key: 'gemini', label: 'Gemini', desc: 'GEMINI_API_KEY' },
+    { key: 'claude', label: 'Claude', desc: 'CLAUDE_API_KEY' },
+    { key: 'deepseek', label: 'DeepSeek', desc: 'DEEPSEEK_API_KEY' },
+    { key: 'pexels', label: 'Pexels', desc: 'PEXELS_API_KEY' },
+    { key: 'pixabay', label: 'Pixabay', desc: 'PIXABAY_API_KEY' },
+    { key: 'unsplash', label: 'Unsplash', desc: 'UNSPLASH_ACCESS_KEY' },
+    { key: 'supabase', label: 'Supabase', desc: 'SUPABASE_URL + SUPABASE_KEY' },
+    { key: 'naver_cafe', label: '네이버 카페', desc: 'NAVER_CLIENT_ID + SECRET + REFRESH_TOKEN + CLUBID + MENUID' },
+  ];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* 실제 연결 상태 (GitHub Secrets/Vercel 기준) */}
+      {Object.keys(apiStatus).length > 0 && (
+        <Card style={{ border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(99,102,241,0.02)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e' }}>서버 API 연결 상태</div>
+            <span style={{ fontSize: 10, color: '#94a3b8' }}>마지막 확인: {lastChecked}</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+            {STATUS_MAP.map(s => {
+              const ok = apiStatus[s.key];
+              return (
+                <div key={s.key} style={{
+                  padding: '10px 8px', borderRadius: 10, textAlign: 'center',
+                  background: ok ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.04)',
+                  border: `1px solid ${ok ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.1)'}`
+                }}>
+                  <div style={{ fontSize: 18, marginBottom: 4 }}>{ok ? '●' : '○'}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: ok ? '#10b981' : '#ef4444' }}>{s.label}</div>
+                  <div style={{ fontSize: 8, color: '#94a3b8', marginTop: 2 }}>{s.desc}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 10 }}>
+            GitHub Secrets 또는 Vercel 환경변수에 입력된 키를 기준으로 엔진 실행 시 자동 감지됩니다.
+          </div>
+        </Card>
+      )}
+
       <div>
         <h2 style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e', marginBottom: 4 }}>API 키 / 연동 설정</h2>
         <p style={{ fontSize: 13, color: '#94a3b8' }}>AI 모델, 이미지 API, SNS 자동 공유를 설정합니다.</p>

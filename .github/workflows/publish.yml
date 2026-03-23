@@ -43,6 +43,11 @@ jobs:
       UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+      NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+      NAVER_REFRESH_TOKEN: ${{ secrets.NAVER_REFRESH_TOKEN }}
+      NAVER_CAFE_CLUBID: ${{ secrets.NAVER_CAFE_CLUBID }}
+      NAVER_CAFE_MENUID: ${{ secrets.NAVER_CAFE_MENUID }}
       SITE_ID: site-1
 
     steps:
