@@ -384,6 +384,7 @@ export default function Dashboard() {
       if (savedConfig.lang) setLang(savedConfig.lang);
       if (savedConfig.autoMode !== undefined) setAutoMode(savedConfig.autoMode);
       if (savedConfig.snsOn) setSnsOn(savedConfig.snsOn);
+      if (savedConfig.saas) setSaas(savedConfig.saas);
       setConfigLoaded(true);
     }
   }, [savedConfig, configLoaded]);
@@ -394,11 +395,11 @@ export default function Dashboard() {
     const timer = setTimeout(() => {
       saveConfig({
         selNiches, tz, preset, selDays, selTimes, postsPerRun,
-        affKeys, adChecks, lang, autoMode, snsOn
+        affKeys, adChecks, lang, autoMode, snsOn, saas
       });
     }, 1000);
     return () => clearTimeout(timer);
-  }, [selNiches, tz, preset, selDays, selTimes, postsPerRun, affKeys, adChecks, lang, autoMode, snsOn, configLoaded, saveConfig]);
+  }, [selNiches, tz, preset, selDays, selTimes, postsPerRun, affKeys, adChecks, lang, autoMode, snsOn, saas, configLoaded, saveConfig]);
 
   if (!isConfigured) return <SetupGuide />;
 
