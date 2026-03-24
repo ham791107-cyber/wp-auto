@@ -36,7 +36,7 @@ export async function POST(request) {
   );
 
   if (resp.status === 204) {
-    return NextResponse.json({ success: true, message: '발행 트리거 완료' });
+    return NextResponse.json({ success: true, message: '발행 트리거 완료', repo: GITHUB_REPO });
   }
 
   const error = await resp.text();

@@ -714,6 +714,7 @@ function NicheTab({ selNiches, toggleNiche, siteId }) {
   const [dryRun, setDryRun] = useState(false);
   const [pubStatus, setPubStatus] = useState('idle');
   const [pubMsg, setPubMsg] = useState('');
+  const [pubLogUrl, setPubLogUrl] = useState('');
   const { posts, loading: postsLoading } = useRecentPosts(siteId, 5);
 
   const handlePublish = async () => {
@@ -730,6 +731,7 @@ function NicheTab({ selNiches, toggleNiche, siteId }) {
       if (resp.ok) {
         setPubStatus('success');
         setPubMsg(`${dryRun ? '[테스트] ' : ''}발행 요청 완료! GitHub Actions에서 ${count}편 처리 중...`);
+        setPubLogUrl(`https://github.com/${data.repo || 'mymiryu-commits/wp-auto'}/actions/workflows/publish.yml`);
       } else {
         setPubStatus('error');
         setPubMsg(data.error || '요청 실패');
@@ -872,10 +874,24 @@ function NicheTab({ selNiches, toggleNiche, siteId }) {
 
           {pubMsg && (
             <div style={{
-              padding: '12px 16px', borderRadius: 10, fontSize: 13, fontWeight: 500,
-              background: pubStatus === 'success' ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+              padding: '14px 18px', borderRadius: 12, fontSize: 13,
+              background: pubStatus === 'success' ? 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.03))' : 'rgba(239,68,68,0.08)',
+              border: pubStatus === 'success' ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(239,68,68,0.2)',
               color: pubStatus === 'success' ? '#059669' : '#dc2626',
-            }}>{pubMsg}</div>
+            }}>
+              <div style={{ fontWeight: 600, marginBottom: pubStatus === 'success' && pubLogUrl ? 8 : 0 }}>{pubMsg}</div>
+              {pubStatus === 'success' && pubLogUrl && (
+                <a href={pubLogUrl} target="_blank" rel="noopener noreferrer" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '6px 14px', borderRadius: 8,
+                  background: 'rgba(16,185,129,0.1)', color: '#059669',
+                  fontSize: 12, fontWeight: 700, textDecoration: 'none',
+                  transition: 'background 0.15s',
+                }}>
+                  <span style={{ fontSize: 14 }}>&#x2197;</span> GitHub Actions 로그 확인
+                </a>
+              )}
+            </div>
           )}
 
           {selNiches.length > 0 && (
