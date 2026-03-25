@@ -24,12 +24,12 @@ API = f"{WP_URL}/wp-json/wp/v2"
 
 # ── 1. 카테고리 확인/생성 ──
 TARGET_CATEGORIES = [
-    {"name": "AI 도구 & 활용", "slug": "ai-tools", "description": "AI 도구 리뷰, 활용법, 자동화 팁"},
-    {"name": "정부지원 & 혜택", "slug": "gov-support", "description": "정부 보조금, 지원금, 숨은 혜택 정보"},
-    {"name": "행사 & 컨퍼런스", "slug": "events", "description": "IT, 비즈니스, 산업별 행사 및 컨퍼런스"},
-    {"name": "핫 뉴스", "slug": "hot-news", "description": "지금 알아야 할 핫한 뉴스와 트렌드"},
-    {"name": "재테크 & 투자", "slug": "finance", "description": "돈 버는 법, 절세, 투자 전략, 부동산"},
-    {"name": "교육 & 생산성", "slug": "education", "description": "자기계발, 생산성 도구, 온라인 교육"},
+    {"name": "AI 도구 & 생산성", "slug": "ai-tools", "description": "ChatGPT, Claude, Gemini 등 AI 도구 리뷰, 비교, 활용법과 업무 자동화 팁"},
+    {"name": "재테크 & 투자", "slug": "finance-invest", "description": "ETF, 적금, 주식, 부동산 등 실전 투자 전략과 재테크 노하우"},
+    {"name": "부업 & 수익화", "slug": "side-income", "description": "블로그 수익화, 직장인 부업, 프리랜서 수익 다각화 방법"},
+    {"name": "IT & 테크 리뷰", "slug": "tech-review", "description": "노트북, 스마트 장비, 앱, 소프트웨어 비교 리뷰"},
+    {"name": "정부지원 & 절세", "slug": "gov-support", "description": "정부 보조금, 지원사업, 종합소득세, 연말정산 절세 가이드"},
+    {"name": "생활 경제", "slug": "life-economy", "description": "보험 비교, 대출 가이드, 생활비 절약, 전월세 팁"},
 ]
 
 print("=== 카테고리 확인/생성 ===")

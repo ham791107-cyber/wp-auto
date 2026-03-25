@@ -145,8 +145,15 @@ TARGET_READERS = [
 # ── 니치 그룹별 글쓰기 스타일 (톤 + 구조 + 비주얼 색상) ──
 # 각 니치 slug → 그룹 ID 매핑
 NICHE_GROUP_MAP = {
-    # 제품 리뷰/비교
-    "ai-tools": "product", "tech": "product", "smart-home": "product",
+    # ── 통합 카테고리 (6개) ──
+    "ai-tools": "product",        # AI 도구 & 생산성
+    "finance-invest": "product",  # 재테크 & 투자
+    "side-income": "promo",       # 부업 & 수익화
+    "tech-review": "product",     # IT & 테크 리뷰
+    "gov-support": "info",        # 정부지원 & 절세
+    "life-economy": "info",       # 생활 경제
+    # ── 레거시 호환 ──
+    "tech": "product", "smart-home": "product",
     "pet": "product", "appliance": "product", "beauty": "product",
     "health": "product", "baby": "product", "fitness": "product",
     "finance": "product", "education": "product",
@@ -159,7 +166,7 @@ NICHE_GROUP_MAP = {
     "s-security": "sector", "s-enter": "sector", "s-ev": "sector",
     "s-space": "sector",
     # 정보 서비스
-    "gov-support": "info", "tax-guide": "info", "agency": "info",
+    "tax-guide": "info", "agency": "info",
     "event": "info", "travel": "info", "keyword-collect": "info",
     # 홍보/마케팅
     "niche-promo": "promo", "brand": "promo", "compare-land": "promo",
@@ -1544,7 +1551,8 @@ class WordPressPublisher:
             "Content-Type": "application/json"
         }
 
-    def publish(self, title, content, category="", tags=None):
+    def publish(self, title, content, category="", tags=None,
+                slug="", focus_keyword="", meta_description=""):
         import requests
         cat_id = self._get_or_create_category(category) if category else None
 
@@ -1554,6 +1562,18 @@ class WordPressPublisher:
         if tags:
             tag_ids = [self._get_or_create_tag(t) for t in tags[:5]]
             post_data["tags"] = [t for t in tag_ids if t]
+        if slug:
+            post_data["slug"] = slug
+
+        # Rank Math SEO meta
+        seo_meta = {}
+        if focus_keyword:
+            seo_meta["rank_math_focus_keyword"] = focus_keyword
+            seo_meta["rank_math_title"] = f"{title} | PlanX AI"
+        if meta_description:
+            seo_meta["rank_math_description"] = meta_description
+        if seo_meta:
+            post_data["meta"] = seo_meta
 
         try:
             resp = requests.post(
@@ -1569,12 +1589,13 @@ class WordPressPublisher:
             return {"status": "failed", "error": str(e)}
 
     def _get_or_create_category(self, name):
-        import requests
+        import requests, html as _html
         try:
             resp = requests.get(f"{self.url}/wp-json/wp/v2/categories",
                                headers=self.headers, params={"search": name, "per_page": 5}, timeout=10)
             for c in resp.json():
-                if c["name"].lower() == name.lower():
+                # WP API returns HTML entities (e.g. &amp;) — decode before compare
+                if _html.unescape(c["name"]).lower() == name.lower():
                     return c["id"]
             resp = requests.post(f"{self.url}/wp-json/wp/v2/categories",
                                 headers=self.headers, json={"name": name}, timeout=10)
@@ -2886,8 +2907,17 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None
             success += 1
             continue
 
+        # SEO: slug와 메타 정보 설정
+        seo_slug = kw_data.get("slug", "")
+        seo_focus = kw_data.get("focus_keyword", keyword)
+        import re as _re
+        _plain = _re.sub(r'<[^>]+>', '', content)
+        seo_meta_desc = kw_data.get("meta_description", _plain[:150].strip() + "...")
+
         result = wp.publish(title, content, category=category,
-                           tags=[keyword, category] if category else [keyword])
+                           tags=[keyword, category] if category else [keyword],
+                           slug=seo_slug, focus_keyword=seo_focus,
+                           meta_description=seo_meta_desc)
 
         if result["status"] == "published":
             log.info(f"발행 성공: {result.get('url', '')} (품질: {quality_score}/100)")
