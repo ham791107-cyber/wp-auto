@@ -236,6 +236,27 @@ export function usePublishTrend(siteId, days = 7) {
   return { trend, loading };
 }
 
+// ── 총 발행 수 (Stage 전환 조건) ──
+export function useTotalPublished(siteId) {
+  const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetch() {
+      const { count: total } = await supabase
+        .from('publish_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('site_id', siteId)
+        .eq('status', 'published');
+      setCount(total || 0);
+      setLoading(false);
+    }
+    fetch();
+  }, [siteId]);
+
+  return { totalPublished: count, loading };
+}
+
 // ── 대시보드 설정 (Supabase 영속화) ──
 export function useDashboardConfig() {
   const [config, setConfig] = useState(null);

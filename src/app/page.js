@@ -1,6 +1,6 @@
 'use client';
 import { useState, useCallback, useEffect } from 'react';
-import { useSites, useTodayStats, useRecentPosts, useMonthlyRevenue, useMonthlyCosts, useAlerts, usePublishTrend, useDashboardConfig } from '@/lib/hooks';
+import { useSites, useTodayStats, useRecentPosts, useMonthlyRevenue, useMonthlyCosts, useAlerts, usePublishTrend, useDashboardConfig, useTotalPublished } from '@/lib/hooks';
 import { supabase, isConfigured } from '@/lib/supabase';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 
@@ -184,7 +184,7 @@ const TABS = [
   { id: 'schedule', label: '스케줄', icon: '◷' },
   { id: 'money', label: '수익화', icon: '↗' },
   { id: 'api', label: 'API/연동', icon: '⊞' },
-  { id: 'adsense', label: 'AdSense', icon: '▣' },
+  { id: 'strategy', label: '전략', icon: '▣' },
   { id: 'revenue', label: '수익', icon: '★' },
   { id: 'costs', label: '비용', icon: '◈' },
   { id: 'alerts', label: '알림', icon: '⚡' },
@@ -210,6 +210,41 @@ const ADSENSE_ITEMS = [
   { id: 'nav', l: '메뉴 네비게이션', d: '카테고리+필수메뉴', c: true },
   { id: 'freq', l: '주 2회+ 발행', d: '꾸준한 업데이트', c: false },
   { id: 'unique', l: '100% 고유 콘텐츠', d: '복사 없음', c: true },
+];
+
+const STAGES = [
+  { id: 1, label: 'AdSense 승인', color: '#3b82f6', qg: 85,
+    desc: '양질의 콘텐츠로 Google AdSense 승인을 획득합니다. 제휴 링크 없이 순수 정보성 글만 발행합니다.',
+    features: ['제휴 링크 OFF', '품질 85점+ 게이트', '정보성 키워드 100%', '필수 페이지 체크'],
+    kwMix: '정보 100%',
+    guide: [
+      { t: 'AdSense 승인 조건', b: '20편 이상의 고유 콘텐츠, 필수 페이지(About/Privacy/Contact/Disclaimer/Terms), HTTPS, 모바일 반응형이 핵심입니다.' },
+      { t: '신청 절차', b: '1) adsense.google.com 접속 → 2) 사이트 URL 입력 → 3) 코드 붙여넣기 → 4) 검토 요청 → 5) 2~14일 대기. 거절 시 콘텐츠 보강 후 재신청 가능합니다.' },
+      { t: '거절 대처법', b: '글 수 부족이 가장 흔한 사유입니다. 30편 이상으로 보강하고 1주 후 재신청하세요. 얇은 콘텐츠(1000자 미만) 삭제도 효과적입니다.' },
+    ],
+  },
+  { id: 2, label: '수익화 시작', color: '#f59e0b', qg: 80,
+    desc: '텐핑 CPA로 즉시 수익을 만들고, 쿠팡 수동 링크로 월 15만원 판매를 달성해 API를 해금합니다.',
+    features: ['AdSense 광고 ON', '텐핑 CPA 자동 삽입', '쿠팡 수동 링크 매칭', '쿠팡 고지문 자동 포함'],
+    kwMix: '정보 70% / 전환 20% / CPA 10%',
+    guide: [
+      { t: '쿠팡 상품 등록 방법', b: 'partners.coupang.com에서 상품 검색 → 링크 생성 → 아래 폼에 상품명/카테고리/URL 입력. 엔진이 카테고리 매칭되는 글에 자동 삽입합니다.' },
+      { t: '잘 팔리는 상품 팁', b: 'IT/가전(노트북, 키보드, 모니터), 생활용품(청소기, 정수기), 도서(재테크/자기계발)가 블로그 전환율이 높습니다.' },
+      { t: '텐핑 가입 및 활용', b: 'tenping.kr 가입 → 고단가 오퍼 선택 (보험 상담 3,000~8,000원, 대출 비교 2,000~5,000원) → 아래 캠페인 등록 폼에 추가.' },
+      { t: '15만원 달성 전략', b: 'IT/테크 리뷰 글에 노트북/가전 쿠팡 링크 → 생활경제 글에 생활용품 → 부업 글에 관련 도서. 20편 기준 월 2~3건 전환으로 달성 가능합니다.' },
+      { t: '쿠팡 API 신청', b: '15만원 달성 후 partners.coupang.com → API 신청 → 승인(1~3일) → Stage 3에서 API 키 입력.' },
+    ],
+  },
+  { id: 3, label: '수익 극대화', color: '#10b981', qg: 75,
+    desc: '쿠팡 API 자동 딥링크 + 텐핑 풀가동 + AI 도구 레퍼럴로 모든 수익 채널을 최적화합니다.',
+    features: ['쿠팡 API 딥링크 자동', '텐핑 풀가동', 'AI 도구 레퍼럴', '복합 키워드 전략'],
+    kwMix: '정보 50% / 전환 35% / CPA 15%',
+    guide: [
+      { t: '쿠팡 API 설정', b: '수익화 탭 → 쿠팡 Access Key/Secret Key 입력. 이후 엔진이 키워드 기반으로 상품을 자동 검색하고 딥링크를 생성합니다.' },
+      { t: 'AI 도구 레퍼럴', b: 'ChatGPT Plus, Claude Pro, Cursor, Midjourney, Notion AI 등 레퍼럴 프로그램 가입 후 링크를 수익화 탭에 등록하세요. AI 도구 리뷰 글에 자동 삽입됩니다.' },
+      { t: '수익 최적화 팁', b: '채널별 RPM을 분석하고, 높은 RPM 카테고리에 글 발행 비중을 높이세요. 재테크/보험 카테고리의 AdSense RPM이 가장 높습니다.' },
+    ],
+  },
 ];
 
 // ═══════════════════════════════════════════
@@ -393,6 +428,14 @@ export default function Dashboard() {
   const [adChecks, setAdChecks] = useState({});
   const toggleAd = id => setAdChecks(p => ({ ...p, [id]: !p[id] }));
 
+  // Monetization Stage
+  const [monStage, setMonStage] = useState(1);
+  const [stageConfirmed, setStageConfirmed] = useState({ adsense_approved: false, coupang_api_approved: false });
+  const [coupangProducts, setCoupangProducts] = useState([]);
+  const [coupangSales, setCoupangSales] = useState(0);
+  const [tenpingCampaigns, setTenpingCampaigns] = useState([]);
+  const { totalPublished } = useTotalPublished(selectedSite);
+
   // Language & Mode
   const [lang, setLang] = useState('ko');
   const [autoMode, setAutoMode] = useState(true);
@@ -415,6 +458,11 @@ export default function Dashboard() {
       if (savedConfig.postsPerRun) setPostsPerRun(savedConfig.postsPerRun);
       if (savedConfig.affKeys) setAffKeys(savedConfig.affKeys);
       if (savedConfig.adChecks) setAdChecks(savedConfig.adChecks);
+      if (savedConfig.monetization_stage) setMonStage(savedConfig.monetization_stage);
+      if (savedConfig.stage_confirmed) setStageConfirmed(savedConfig.stage_confirmed);
+      if (savedConfig.coupang_manual_products) setCoupangProducts(savedConfig.coupang_manual_products);
+      if (savedConfig.coupang_sales_krw !== undefined) setCoupangSales(savedConfig.coupang_sales_krw);
+      if (savedConfig.tenping_campaigns) setTenpingCampaigns(savedConfig.tenping_campaigns);
       if (savedConfig.lang) setLang(savedConfig.lang);
       if (savedConfig.autoMode !== undefined) setAutoMode(savedConfig.autoMode);
       if (savedConfig.snsOn) setSnsOn(savedConfig.snsOn);
@@ -429,7 +477,10 @@ export default function Dashboard() {
     const timer = setTimeout(() => {
       saveConfig({
         selNiches, tz, preset, selDays, selTimes, postsPerRun,
-        affKeys, adChecks, lang, autoMode, snsOn, saas
+        affKeys, adChecks, lang, autoMode, snsOn, saas,
+        monetization_stage: monStage, stage_confirmed: stageConfirmed,
+        coupang_manual_products: coupangProducts, coupang_sales_krw: coupangSales,
+        tenping_campaigns: tenpingCampaigns,
       });
     }, 1000);
     return () => clearTimeout(timer);
@@ -444,6 +495,9 @@ export default function Dashboard() {
     apiKeys, setApi, snsOn, toggleSns, adChecks, toggleAd,
     lang, setLang, autoMode, setAutoMode,
     adPct, connectedAff, connectedApi, snsCount, sites, savedConfig,
+    monStage, setMonStage, stageConfirmed, setStageConfirmed,
+    coupangProducts, setCoupangProducts, coupangSales, setCoupangSales,
+    tenpingCampaigns, setTenpingCampaigns, totalPublished,
   };
 
   return (
@@ -503,6 +557,29 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Stage Progress Bar */}
+          <div style={{ display: 'flex', gap: 4, margin: '0 0 8px' }}>
+            {STAGES.map(s => {
+              const active = monStage >= s.id;
+              const current = monStage === s.id;
+              return (
+                <div key={s.id} onClick={() => current && setTab('strategy')} style={{
+                  flex: 1, padding: '6px 12px', borderRadius: 8, cursor: current ? 'pointer' : 'default',
+                  background: current ? `${s.color}15` : active ? 'rgba(16,185,129,0.06)' : '#f1f5f9',
+                  border: current ? `2px solid ${s.color}` : '1px solid #e2e8f0',
+                  opacity: active ? 1 : 0.45, transition: 'all 0.2s',
+                }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: active ? s.color : '#94a3b8', letterSpacing: 1 }}>
+                    {active ? `STAGE ${s.id}` : `STAGE ${s.id}`}{!active && ' \u{1F512}'}
+                  </div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: active ? '#1e293b' : '#cbd5e1', marginTop: 1 }}>
+                    {s.label}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
           {/* Tabs */}
           <div style={{ display: 'flex', gap: 2, overflowX: 'auto' }}>
             {TABS.map(t => (
@@ -557,7 +634,7 @@ export default function Dashboard() {
         {tab === 'schedule' && <ScheduleTab {...sharedProps} />}
         {tab === 'money' && <MoneyTab {...sharedProps} />}
         {tab === 'api' && <ApiTab {...sharedProps} />}
-        {tab === 'adsense' && <AdSenseTab {...sharedProps} />}
+        {tab === 'strategy' && <StageTab {...sharedProps} />}
         {tab === 'revenue' && <RevenueTab siteId={selectedSite} />}
         {tab === 'costs' && <CostsTab siteId={selectedSite} />}
         {tab === 'alerts' && <AlertsTab siteId={selectedSite} />}
@@ -572,7 +649,7 @@ export default function Dashboard() {
 // TAB 1: DASHBOARD
 // ═══════════════════════════════════════════
 
-function DashTab({ siteId, selNiches, connectedAff, connectedApi, adPct, selDays, selTimes, postsPerRun, lang, setLang, autoMode, snsOn }) {
+function DashTab({ siteId, selNiches, connectedAff, connectedApi, adPct, selDays, selTimes, postsPerRun, lang, setLang, autoMode, snsOn, monStage }) {
   const { stats } = useTodayStats(siteId);
   const { total: rev } = useMonthlyRevenue(siteId);
   const { costs } = useMonthlyCosts(siteId);
@@ -589,7 +666,7 @@ function DashTab({ siteId, selNiches, connectedAff, connectedApi, adPct, selDays
           { l: '니치', v: selNiches.length, u: '개', c: '#6366f1', i: '◉' },
           { l: '수익화', v: connectedAff, u: '개', c: '#10b981', i: '↗' },
           { l: 'API', v: connectedApi, u: '개', c: '#3b82f6', i: '⊞' },
-          { l: 'AdSense', v: `${adPct}%`, u: '', c: adPct >= 100 ? '#10b981' : '#f59e0b', i: '▣' },
+          { l: '전략', v: `Stage ${monStage}`, u: '', c: STAGES[monStage - 1].color, i: '▣' },
           { l: '스케줄', v: `${selDays.length}일×${selTimes.length}`, u: '회', c: '#8b5cf6', i: '◷' },
         ].map((s, i) => (
           <Card key={i} style={{ padding: 16 }}>
@@ -1294,84 +1371,269 @@ function ApiTab({ apiKeys, setApi, snsOn, toggleSns, savedConfig }) {
 }
 
 // ═══════════════════════════════════════════
-// TAB 6: ADSENSE
+// TAB 6: STRATEGY (Stage-Based Monetization)
 // ═══════════════════════════════════════════
 
-function AdSenseTab({ adChecks, toggleAd, adPct }) {
+function StageTab({ monStage, setMonStage, stageConfirmed, setStageConfirmed,
+  coupangProducts, setCoupangProducts, coupangSales, setCoupangSales,
+  tenpingCampaigns, setTenpingCampaigns, totalPublished, adChecks, toggleAd, adPct }) {
+
+  const [guideOpen, setGuideOpen] = useState(null);
+  const [cpName, setCpName] = useState('');
+  const [cpCat, setCpCat] = useState('');
+  const [cpUrl, setCpUrl] = useState('');
+  const [tpName, setTpName] = useState('');
+  const [tpCat, setTpCat] = useState('');
+  const [tpUrl, setTpUrl] = useState('');
+  const [tpCpa, setTpCpa] = useState('');
+
+  const cur = STAGES[monStage - 1];
+  const essentialOk = ['about', 'privacy', 'contact', 'nav'].every(k => adChecks[k]);
+  const can12 = totalPublished >= 20 && essentialOk && stageConfirmed.adsense_approved;
+  const can23 = totalPublished >= 50 && coupangSales >= 150000 && stageConfirmed.coupang_api_approved;
+  const canAdvance = monStage === 1 ? can12 : monStage === 2 ? can23 : false;
+
+  const addCoupang = () => {
+    if (!cpName || !cpUrl) return;
+    setCoupangProducts(p => [...p, { id: Date.now().toString(), name: cpName, category: cpCat, url: cpUrl }]);
+    setCpName(''); setCpCat(''); setCpUrl('');
+  };
+  const addTenping = () => {
+    if (!tpName || !tpUrl) return;
+    setTenpingCampaigns(p => [...p, { id: Date.now().toString(), name: tpName, category: tpCat, url: tpUrl, cpa_amount: Number(tpCpa) || 0 }]);
+    setTpName(''); setTpCat(''); setTpUrl(''); setTpCpa('');
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div>
-        <h2 style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e', marginBottom: 4 }}>AdSense 승인 준비</h2>
-        <p style={{ fontSize: 13, color: '#94a3b8' }}>모든 필수 항목 충족 시 Google AdSense에 신청할 수 있습니다.</p>
-      </div>
-
-      {/* Progress */}
+      {/* Current Stage Overview */}
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <span style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e' }}>승인 준비율</span>
-          <span style={{ fontSize: 32, fontWeight: 900, color: adPct >= 100 ? '#10b981' : adPct >= 70 ? '#f59e0b' : '#ef4444' }}>{adPct}%</span>
-        </div>
-        <div style={{ width: '100%', height: 10, background: '#f1f5f9', borderRadius: 5, overflow: 'hidden' }}>
-          <div style={{
-            width: `${adPct}%`, height: '100%', borderRadius: 5,
-            background: adPct >= 100 ? '#10b981' : adPct >= 70 ? '#f59e0b' : '#ef4444',
-            transition: 'width 0.5s'
-          }} />
-        </div>
-        {adPct >= 100 && (
-          <div style={{ marginTop: 14, textAlign: 'center' }}>
-            <a href="https://www.google.com/adsense/start/" target="_blank" rel="noopener noreferrer" style={{
-              display: 'inline-block', padding: '12px 32px', borderRadius: 12,
-              background: '#10b981', color: '#fff', fontWeight: 700, fontSize: 14, textDecoration: 'none',
-              boxShadow: '0 2px 8px rgba(16,185,129,0.3)'
-            }}>AdSense 신청하기</a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 14, background: `${cur.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, color: cur.color }}>
+            {monStage}
           </div>
-        )}
+          <div>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e', margin: 0 }}>Stage {monStage}: {cur.label}</h2>
+            <p style={{ fontSize: 12, color: '#64748b', margin: '4px 0 0' }}>{cur.desc}</p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {cur.features.map((f, i) => (
+            <span key={i} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 20, background: `${cur.color}12`, color: cur.color, fontWeight: 600 }}>{f}</span>
+          ))}
+        </div>
+        <div style={{ marginTop: 12, padding: '10px 14px', background: '#f8fafc', borderRadius: 10, fontSize: 12, color: '#475569' }}>
+          <strong>자동 설정:</strong> 품질 {cur.qg}점+ | 키워드 {cur.kwMix} | 발행 글 {totalPublished}편
+        </div>
       </Card>
 
-      {/* Checklist */}
-      <Card>
-        {ADSENSE_ITEMS.map(item => (
-          <div key={item.id} style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '10px 0', borderBottom: '1px solid #f1f5f9'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <button onClick={() => toggleAd(item.id)} style={{
-                width: 22, height: 22, borderRadius: 6, border: 'none', cursor: 'pointer',
-                background: adChecks[item.id] ? '#10b981' : '#e2e8f0',
-                color: '#fff', fontSize: 12, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transition: 'background 0.15s'
-              }}>{adChecks[item.id] ? '✓' : ''}</button>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#1a1a2e' }}>
-                  {item.l} {item.c && <span style={{ fontSize: 9, color: '#ef4444', fontWeight: 700 }}>필수</span>}
-                </div>
-                <div style={{ fontSize: 10, color: '#94a3b8' }}>{item.d}</div>
-              </div>
+      {/* Stage 1: AdSense Checklist */}
+      {monStage === 1 && (<>
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e' }}>AdSense 승인 준비율</span>
+            <span style={{ fontSize: 28, fontWeight: 900, color: adPct >= 100 ? '#10b981' : adPct >= 70 ? '#f59e0b' : '#ef4444' }}>{adPct}%</span>
+          </div>
+          <div style={{ width: '100%', height: 8, background: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+            <div style={{ width: `${Math.min(adPct, 100)}%`, height: '100%', borderRadius: 4, background: adPct >= 100 ? '#10b981' : adPct >= 70 ? '#f59e0b' : '#ef4444', transition: 'width 0.5s' }} />
+          </div>
+          {adPct >= 100 && (
+            <div style={{ marginTop: 12, textAlign: 'center' }}>
+              <a href="https://www.google.com/adsense/start/" target="_blank" rel="noopener noreferrer" style={{
+                display: 'inline-block', padding: '10px 28px', borderRadius: 10, background: '#10b981', color: '#fff', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>AdSense 신청하기</a>
             </div>
-            <Badge text={adChecks[item.id] ? '완료' : '미완료'} color={adChecks[item.id] ? 'green' : 'yellow'} />
+          )}
+        </Card>
+        <Card>
+          {ADSENSE_ITEMS.map(item => (
+            <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f1f5f9' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button onClick={() => toggleAd(item.id)} style={{
+                  width: 20, height: 20, borderRadius: 5, border: 'none', cursor: 'pointer',
+                  background: adChecks[item.id] ? '#10b981' : '#e2e8f0', color: '#fff', fontSize: 11, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{adChecks[item.id] ? '\u2713' : ''}</button>
+                <div>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#1a1a2e' }}>{item.l} </span>
+                  {item.c && <span style={{ fontSize: 9, color: '#ef4444', fontWeight: 700 }}>필수</span>}
+                  <div style={{ fontSize: 10, color: '#94a3b8' }}>{item.d}</div>
+                </div>
+              </div>
+              <Badge text={adChecks[item.id] ? '완료' : '미완료'} color={adChecks[item.id] ? 'green' : 'yellow'} />
+            </div>
+          ))}
+        </Card>
+      </>)}
+
+      {/* Stage 2: Coupang Manual + Tenping */}
+      {monStage === 2 && (<>
+        {/* Coupang Products */}
+        <Card>
+          <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e', marginBottom: 12 }}>쿠팡 상품 등록</div>
+          <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 12px' }}>상품을 등록하면 카테고리가 매칭되는 글에 자동 삽입됩니다.</p>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+            <input value={cpName} onChange={e => setCpName(e.target.value)} placeholder="상품명" style={{ flex: 2, padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} />
+            <input value={cpCat} onChange={e => setCpCat(e.target.value)} placeholder="카테고리 (노트북, 청소기...)" style={{ flex: 2, padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} />
+            <input value={cpUrl} onChange={e => setCpUrl(e.target.value)} placeholder="쿠팡 링크 URL" style={{ flex: 3, padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} />
+            <button onClick={addCoupang} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>+ 추가</button>
+          </div>
+          {coupangProducts.map((p, i) => (
+            <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #f1f5f9', fontSize: 11 }}>
+              <span style={{ fontWeight: 600 }}>{p.name}</span>
+              <span style={{ color: '#64748b' }}>{p.category}</span>
+              <button onClick={() => setCoupangProducts(prev => prev.filter((_, j) => j !== i))} style={{ border: 'none', background: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 11 }}>삭제</button>
+            </div>
+          ))}
+          {coupangProducts.length === 0 && <div style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', padding: 12 }}>등록된 상품이 없습니다</div>}
+        </Card>
+
+        {/* Sales Progress */}
+        <Card>
+          <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e', marginBottom: 8 }}>쿠팡 판매 현황</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <div style={{ flex: 1, height: 10, background: '#f1f5f9', borderRadius: 5, overflow: 'hidden' }}>
+              <div style={{ width: `${Math.min((coupangSales / 150000) * 100, 100)}%`, height: '100%', borderRadius: 5, background: coupangSales >= 150000 ? '#10b981' : '#f59e0b', transition: 'width 0.5s' }} />
+            </div>
+            <span style={{ fontSize: 13, fontWeight: 800, color: coupangSales >= 150000 ? '#10b981' : '#f59e0b' }}>
+              {(coupangSales / 10000).toFixed(1)}만 / 15만
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <span style={{ fontSize: 11, color: '#64748b' }}>매출 수동 입력:</span>
+            <input type="number" value={coupangSales} onChange={e => setCoupangSales(Number(e.target.value) || 0)}
+              style={{ width: 120, padding: '6px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} />
+            <span style={{ fontSize: 10, color: '#94a3b8' }}>원</span>
+          </div>
+          <div style={{ marginTop: 10, padding: '8px 12px', background: '#f0fdf4', borderRadius: 8, fontSize: 11, color: '#166534' }}>
+            필수 고지문 (글 하단 자동 삽입): "이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."
+          </div>
+        </Card>
+
+        {/* Tenping Campaigns */}
+        <Card>
+          <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e', marginBottom: 12 }}>텐핑 캠페인 등록</div>
+          <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 12px' }}>고단가 CPA 캠페인을 등록하면 관련 글에 CTA 박스가 자동 삽입됩니다.</p>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+            <input value={tpName} onChange={e => setTpName(e.target.value)} placeholder="캠페인명" style={{ flex: 2, padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} />
+            <input value={tpCat} onChange={e => setTpCat(e.target.value)} placeholder="카테고리 (보험, 대출...)" style={{ flex: 2, padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} />
+            <input value={tpUrl} onChange={e => setTpUrl(e.target.value)} placeholder="텐핑 링크" style={{ flex: 3, padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} />
+            <input value={tpCpa} onChange={e => setTpCpa(e.target.value)} placeholder="CPA(원)" type="number" style={{ width: 80, padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} />
+            <button onClick={addTenping} style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#f59e0b', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>+ 추가</button>
+          </div>
+          {tenpingCampaigns.map((c, i) => (
+            <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #f1f5f9', fontSize: 11 }}>
+              <span style={{ fontWeight: 600 }}>{c.name}</span>
+              <span style={{ color: '#64748b' }}>{c.category}</span>
+              <span style={{ color: '#f59e0b', fontWeight: 700 }}>{(c.cpa_amount || 0).toLocaleString()}원</span>
+              <button onClick={() => setTenpingCampaigns(prev => prev.filter((_, j) => j !== i))} style={{ border: 'none', background: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 11 }}>삭제</button>
+            </div>
+          ))}
+          {tenpingCampaigns.length === 0 && <div style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', padding: 12 }}>등록된 캠페인이 없습니다</div>}
+        </Card>
+      </>)}
+
+      {/* Stage 3: Full monetization overview */}
+      {monStage === 3 && (
+        <Card>
+          <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e', marginBottom: 12 }}>전채널 수익화 현황</div>
+          {[
+            { ch: 'AdSense', desc: '디스플레이 광고', status: '활성', color: '#10b981' },
+            { ch: '쿠팡 API', desc: '자동 딥링크', status: coupangProducts.length > 0 ? '활성' : '수익화 탭에서 설정', color: '#3b82f6' },
+            { ch: '텐핑 CPA', desc: tenpingCampaigns.length + '개 캠페인', status: '활성', color: '#f59e0b' },
+            { ch: 'AI 레퍼럴', desc: '수익화 탭 SaaS 섹션에서 등록', status: '설정 필요', color: '#8b5cf6' },
+          ].map((ch, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e' }}>{ch.ch}</div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>{ch.desc}</div>
+              </div>
+              <Badge text={ch.status} color={ch.status === '활성' ? 'green' : 'yellow'} />
+            </div>
+          ))}
+        </Card>
+      )}
+
+      {/* Stage Transition */}
+      {monStage < 3 && (
+        <Card>
+          <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e', marginBottom: 12 }}>
+            Stage {monStage} &rarr; Stage {monStage + 1} 해금 조건
+          </div>
+          {monStage === 1 ? (
+            <>
+              <StageCondition ok={totalPublished >= 20} label={`글 20편 이상 (현재: ${totalPublished}편)`} />
+              <StageCondition ok={essentialOk} label="필수 페이지 완료 (About, Privacy, Contact, 메뉴)" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
+                <button onClick={() => setStageConfirmed(p => ({ ...p, adsense_approved: !p.adsense_approved }))} style={{
+                  width: 20, height: 20, borderRadius: 5, border: 'none', cursor: 'pointer',
+                  background: stageConfirmed.adsense_approved ? '#10b981' : '#e2e8f0', color: '#fff', fontSize: 11,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{stageConfirmed.adsense_approved ? '\u2713' : ''}</button>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#1a1a2e' }}>AdSense 승인 완료 확인</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <StageCondition ok={totalPublished >= 50} label={`글 50편 이상 (현재: ${totalPublished}편)`} />
+              <StageCondition ok={coupangSales >= 150000} label={`쿠팡 매출 15만원 달성 (현재: ${(coupangSales/10000).toFixed(1)}만원)`} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
+                <button onClick={() => setStageConfirmed(p => ({ ...p, coupang_api_approved: !p.coupang_api_approved }))} style={{
+                  width: 20, height: 20, borderRadius: 5, border: 'none', cursor: 'pointer',
+                  background: stageConfirmed.coupang_api_approved ? '#10b981' : '#e2e8f0', color: '#fff', fontSize: 11,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{stageConfirmed.coupang_api_approved ? '\u2713' : ''}</button>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#1a1a2e' }}>쿠팡 API 승인 완료 확인</span>
+              </div>
+            </>
+          )}
+          <button onClick={() => { if (canAdvance && confirm(`Stage ${monStage + 1}로 전환하시겠습니까? 엔진 설정이 자동으로 변경됩니다.`)) setMonStage(monStage + 1); }}
+            disabled={!canAdvance} style={{
+              marginTop: 12, width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', cursor: canAdvance ? 'pointer' : 'not-allowed',
+              background: canAdvance ? STAGES[monStage].color : '#e2e8f0', color: canAdvance ? '#fff' : '#94a3b8',
+              fontSize: 14, fontWeight: 700, transition: 'all 0.2s' }}>
+            {canAdvance ? `Stage ${monStage + 1}: ${STAGES[monStage].label}로 전환` : '조건 미충족'}
+          </button>
+        </Card>
+      )}
+
+      {/* Guide */}
+      <Card>
+        <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e', marginBottom: 12 }}>Stage {monStage} 가이드</div>
+        {cur.guide.map((g, i) => (
+          <div key={i} style={{ marginBottom: 2 }}>
+            <button onClick={() => setGuideOpen(guideOpen === i ? null : i)} style={{
+              width: '100%', textAlign: 'left', padding: '10px 0', border: 'none', borderBottom: '1px solid #f1f5f9',
+              background: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#1a1a2e' }}>{g.t}</span>
+              <span style={{ fontSize: 10, color: '#94a3b8' }}>{guideOpen === i ? '\u25B2' : '\u25BC'}</span>
+            </button>
+            {guideOpen === i && (
+              <div style={{ padding: '10px 0 14px', fontSize: 12, color: '#475569', lineHeight: 1.8 }}>{g.b}</div>
+            )}
           </div>
         ))}
       </Card>
 
-      {/* Manual */}
-      <Card>
-        <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e', marginBottom: 12 }}>신청 매뉴얼</div>
-        {['adsense.google.com 접속 + Google 로그인', '사이트 URL 입력', '계정 유형: 개인, 국가: 대한민국',
-          '전화번호 인증 (SMS)', 'AdSense 코드를 WP head에 삽입 (Ad Inserter)', '심사 대기 (2~14일)', '승인 후 자동 광고 ON'
-        ].map((s, i) => (
-          <div key={i} style={{ display: 'flex', gap: 10, padding: '8px 0', borderBottom: '1px solid #f1f5f9' }}>
-            <div style={{
-              width: 24, height: 24, borderRadius: 12, background: '#6366f1', color: '#fff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, fontWeight: 700, flexShrink: 0
-            }}>{i + 1}</div>
-            <span style={{ fontSize: 12, color: '#1a1a2e', lineHeight: '24px' }}>{s}</span>
+      {/* Next Stage Preview */}
+      {monStage < 3 && (
+        <div style={{ padding: 16, borderRadius: 12, border: '1px dashed #cbd5e1', background: '#fafbfc', opacity: 0.7 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', marginBottom: 6 }}>
+            다음 단계 미리보기: Stage {monStage + 1} — {STAGES[monStage].label}
           </div>
-        ))}
-      </Card>
+          <p style={{ fontSize: 11, color: '#94a3b8', margin: 0 }}>{STAGES[monStage].desc}</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+            {STAGES[monStage].features.map((f, i) => (
+              <span key={i} style={{ fontSize: 10, padding: '3px 8px', borderRadius: 12, background: '#f1f5f9', color: '#94a3b8' }}>{f}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StageCondition({ ok, label }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid #f1f5f9' }}>
+      <span style={{ fontSize: 14 }}>{ok ? '\u2705' : '\u2B1C'}</span>
+      <span style={{ fontSize: 12, color: ok ? '#10b981' : '#64748b', fontWeight: ok ? 600 : 400 }}>{label}</span>
     </div>
   );
 }

@@ -71,7 +71,7 @@ class KeywordManager:
         with open(self.used_file, "w", encoding="utf-8") as f:
             json.dump(self.used, f, ensure_ascii=False, indent=2)
 
-    def select(self, count=5, pipeline="autoblog", niche=""):
+    def select(self, count=5, pipeline="autoblog", niche="", kw_mix=None):
         """미사용 키워드 중 count개 선택 (niche로 카테고리 필터링)"""
         pool = self.keywords.get("keywords", [])
         available = [
@@ -88,16 +88,19 @@ class KeywordManager:
             log.warning(f"가용 키워드 {len(available)}개 (요청 {count}개)")
             count = len(available)
 
-        # 타입별 비율: traffic 60%, conversion 30%, high_cpa 10%
+        # 타입별 비율: stage kw_mix 또는 기본값
         selected = []
         by_type = {}
         for kw in available:
             t = kw.get("type", "traffic")
             by_type.setdefault(t, []).append(kw)
 
-        targets = {"traffic": max(1, int(count * 0.6)),
-                   "conversion": max(1, int(count * 0.3)),
-                   "high_cpa": max(0, count - max(1, int(count * 0.6)) - max(1, int(count * 0.3)))}
+        mix = kw_mix or {"traffic": 0.6, "conversion": 0.3, "high_cpa": 0.1}
+        targets = {
+            "traffic": max(1, int(count * mix["traffic"])),
+            "conversion": max(0, int(count * mix["conversion"])),
+            "high_cpa": max(0, count - max(1, int(count * mix["traffic"])) - max(0, int(count * mix["conversion"])))
+        }
 
         for ktype, num in targets.items():
             pool_type = by_type.get(ktype, [])
@@ -128,6 +131,13 @@ CONTENT_ANGLES = [
     "고급 활용 팁", "무료 vs 유료 비교", "트렌드/최신 동향", "실제 사례/후기",
     "문제 해결/트러블슈팅", "비용 절감 방법", "자동화 연계", "업데이트 소식",
 ]
+
+# ── 단계별 수익화 설정 ──
+STAGE_CONFIG = {
+    1: {"adsense_mode": True,  "quality_min": 85, "kw_mix": {"traffic": 1.0, "conversion": 0.0, "high_cpa": 0.0}},
+    2: {"adsense_mode": False, "quality_min": 80, "kw_mix": {"traffic": 0.7, "conversion": 0.2, "high_cpa": 0.1}},
+    3: {"adsense_mode": False, "quality_min": 75, "kw_mix": {"traffic": 0.5, "conversion": 0.35, "high_cpa": 0.15}},
+}
 
 # 콘텐츠 포맷
 CONTENT_FORMATS = [
@@ -1473,9 +1483,12 @@ class ImageManager:
 # 5. 제휴 링크 삽입
 # ═══════════════════════════════════════════════════════
 class AffiliateManager:
-    def __init__(self):
+    def __init__(self, global_cfg=None):
         self.links_file = DATA / "affiliates.json"
         self.links = self._load()
+        self.global_cfg = global_cfg or {}
+        self.manual_coupang = self.global_cfg.get("coupang_manual_products", [])
+        self.tenping_campaigns = self.global_cfg.get("tenping_campaigns", [])
 
     def _load(self):
         if self.links_file.exists():
@@ -1483,53 +1496,94 @@ class AffiliateManager:
                 return json.load(f)
         return {"coupang": {}, "cpa": {}, "adsense_slots": []}
 
-    def insert_links(self, content, keyword, category):
+    def insert_links(self, content, keyword, category, stage=1):
+        if stage < 2:
+            return content, False
+
+        has_coupang = False
+        matched = []
+
+        # 기존 affiliates.json 매칭
         coupang = self.links.get("coupang", {})
-        matched_links = []
+        for cat_key, items in coupang.items():
+            if cat_key in keyword or cat_key in category:
+                for item in items:
+                    if "YOUR_" not in item.get("url", "YOUR_"):
+                        matched.append(item)
 
-        for cat, links in coupang.items():
-            if cat.lower() in keyword.lower() or cat.lower() in category.lower():
-                if isinstance(links, list):
-                    matched_links.extend(links)
-                elif isinstance(links, str):
-                    matched_links.append({"name": cat, "url": links})
+        # 수동 등록 쿠팡 상품 매칭
+        for product in self.manual_coupang:
+            prod_cat = product.get("category", "")
+            if prod_cat and (prod_cat in keyword or prod_cat in category):
+                matched.append({"name": product["name"], "url": product["url"]})
 
-        if matched_links:
-            link_html = self._build_product_box(matched_links[:3])
-            if "</h2>" in content:
-                parts = content.rsplit("</h2>", 1)
-                content = parts[0] + "</h2>" + link_html + parts[1]
-            else:
-                content += link_html
-
-        return content, bool(matched_links)
-
-    def _build_product_box(self, links):
-        items = ""
-        for link in links:
-            name = link.get("name", "추천 상품")
-            url = link.get("url", "#")
-            if "YOUR_" in url:
-                continue
-            items += (
-                f'<li style="margin:8px 0">'
-                f'<a href="{url}" target="_blank" rel="nofollow sponsored" '
-                f'style="color:#1a73e8;text-decoration:none;font-weight:600">'
-                f'{name} 최저가 확인하기</a></li>'
+        if matched:
+            items_html = ""
+            for m in matched[:3]:
+                items_html += (
+                    f'<li style="margin:8px 0">'
+                    f'<a href="{m["url"]}" target="_blank" rel="nofollow sponsored" '
+                    f'style="color:#6366f1;text-decoration:none;font-weight:600">'
+                    f'{m["name"]} 최저가 확인하기</a></li>'
+                )
+            box = (
+                f'\n<div style="background:#f8f9ff;border:2px solid #dde3ff;'
+                f'border-radius:12px;padding:20px;margin:24px 0">'
+                f'<p style="font-weight:700;font-size:16px;margin:0 0 12px">추천 상품</p>'
+                f'<ul style="list-style:none;padding:0;margin:0">{items_html}</ul>'
+                f'</div>\n'
             )
+            # 첫 번째 H2 앞에 삽입
+            import re as _re
+            h2_match = _re.search(r'<h2', content)
+            if h2_match:
+                content = content[:h2_match.start()] + box + content[h2_match.start():]
+            else:
+                content += box
+            has_coupang = True
 
-        if not items:
-            return ""
+            # 쿠팡 고지문 (중복 방지)
+            if '쿠팡 파트너스' not in content:
+                content += (
+                    '<p style="font-size:12px;color:#999;margin:24px 0 0;padding:12px;'
+                    'background:#f8f8f8;border-radius:8px">'
+                    '이 포스팅은 쿠팡 파트너스 활동의 일환으로, '
+                    '이에 따른 일정액의 수수료를 제공받습니다.</p>'
+                )
 
-        return (
-            f'\n<div style="background:#f8f9ff;border:2px solid #dde3ff;'
-            f'border-radius:12px;padding:20px;margin:24px 0">'
-            f'<p style="font-weight:700;font-size:16px;margin:0 0 12px">추천 상품</p>'
-            f'<ul style="list-style:none;padding:0;margin:0">{items}</ul>'
-            f'<p style="font-size:11px;color:#999;margin:12px 0 0">'
-            f'이 포스팅은 쿠팡 파트너스 활동의 일환으로, 일정액의 수수료를 제공받을 수 있습니다.</p>'
-            f'</div>\n'
-        )
+        # 텐핑 CPA 삽입 (Stage 2+)
+        tenping_matched = []
+        for campaign in self.tenping_campaigns:
+            camp_cat = campaign.get("category", "")
+            if camp_cat and (camp_cat in keyword or camp_cat in category):
+                tenping_matched.append(campaign)
+
+        if tenping_matched:
+            import re as _re
+            tp_items = ""
+            for c in tenping_matched[:2]:
+                tp_items += (
+                    f'<li style="margin:8px 0">'
+                    f'<a href="{c["url"]}" target="_blank" rel="nofollow sponsored" '
+                    f'style="color:#ff6b35;text-decoration:none;font-weight:600">'
+                    f'{c["name"]} 자세히 보기</a></li>'
+                )
+            tp_box = (
+                f'\n<div style="background:#fff8f0;border:2px solid #ffe0c0;'
+                f'border-radius:12px;padding:20px;margin:24px 0">'
+                f'<p style="font-weight:700;font-size:16px;margin:0 0 12px">추천 서비스</p>'
+                f'<ul style="list-style:none;padding:0;margin:0">{tp_items}</ul>'
+                f'</div>\n'
+            )
+            # 두 번째 H2 뒤에 삽입
+            h2_positions = [m.end() for m in _re.finditer(r'</h2>', content)]
+            if len(h2_positions) >= 2:
+                pos = h2_positions[1]
+                content = content[:pos] + tp_box + content[pos:]
+            else:
+                content += tp_box
+
+        return content, has_coupang
 
 
 # ═══════════════════════════════════════════════════════
@@ -2829,7 +2883,13 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None
     effective_lang = site_cfg.get("lang", global_cfg.get("lang", "ko"))
     effective_draft_model = ai_cfg.get("draft_model", site_cfg.get("draft_model"))
     effective_polish_model = ai_cfg.get("polish_model", site_cfg.get("polish_model"))
-    effective_adsense = adsense_mode or site_cfg.get("adsense_mode", False)
+    # Stage 기반 설정
+    monetization_stage = int(global_cfg.get("monetization_stage", 1))
+    stage_cfg = STAGE_CONFIG.get(monetization_stage, STAGE_CONFIG[1])
+    effective_adsense = stage_cfg["adsense_mode"]
+    if adsense_mode:  # CLI --adsense-mode override
+        effective_adsense = True
+    log.info(f"  수익화 단계: Stage {monetization_stage} (품질 {stage_cfg['quality_min']}+)")
 
     if not WP_URL:
         log.error(f"[{SITE_ID}] WP_URL 없음 — 스킵")
@@ -2853,15 +2913,16 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None
     cg = ContentGenerator()
     cf = ContentFormatter()
     im = ImageManager()
-    am = AffiliateManager()
+    am = AffiliateManager(global_cfg=global_cfg)
     ao = AdSenseOptimizer()
     qg = QualityGate()
+    qg.MIN_SCORE = stage_cfg["quality_min"]
     nc = NaverCafePublisher()
     wp = WordPressPublisher()
     sb = SupabaseLogger()
 
     # 1순위: 정적 keywords.json (SEO slug/메타 포함된 큐레이션 키워드)
-    keywords = km.select(count=count, pipeline=pipeline)
+    keywords = km.select(count=count, pipeline=pipeline, kw_mix=stage_cfg["kw_mix"])
 
     # 2순위: 동적 키워드 생성 폴백 (정적 키워드 소진 시)
     if not keywords:
@@ -2934,13 +2995,11 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None
                 log.info(f"이미지 1장 삽입 [{image_source}]")
 
         # Step 4: 제휴 링크 삽입
-        has_coupang = False
-        if not effective_adsense:  # AdSense 승인 모드에서는 제휴 링크 비활성화
-            content, has_coupang = am.insert_links(content, keyword, category)
-            if has_coupang:
-                log.info("제휴 링크 삽입 완료")
-        else:
-            log.info("  AdSense 모드 — 제휴 링크 스킵")
+        content, has_coupang = am.insert_links(content, keyword, category, stage=monetization_stage)
+        if has_coupang:
+            log.info(f"  제휴 링크 삽입 완료 (Stage {monetization_stage})")
+        elif monetization_stage == 1:
+            log.info("  Stage 1 — 제휴 링크 스킵")
 
         # Step 5: AdSense HTML 최적화
         content = ao.optimize(content)
