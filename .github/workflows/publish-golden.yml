@@ -15,10 +15,6 @@ on:
         description: '드라이런 (true/false)'
         required: false
         default: 'false'
-      skip_etf:
-        description: 'ETF 리포트 스킵 (true/false)'
-        required: false
-        default: 'false'
       niche:
         description: '니치/카테고리 필터 (빈값=전체)'
         required: false
@@ -91,23 +87,8 @@ jobs:
 
           python scripts/main.py $ARGS
 
-      - name: Run ETF Report (평일 장 마감 후)
-        if: >
-          github.event_name == 'schedule' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.skip_etf != 'true')
-        run: |
-          # 평일(월~금)만 ETF 리포트 발행
-          DAY_OF_WEEK=$(date +%u)
-          if [ "$DAY_OF_WEEK" -le 5 ]; then
-            DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
-            ARGS="--report-type blog-ready"
-            if [ "$DRY_RUN" = "true" ]; then
-              ARGS="$ARGS --dry-run"
-            fi
-            python scripts/etf_report.py $ARGS
-          else
-            echo "주말 — ETF 리포트 스킵"
-          fi
+      # ETF 리포트는 etf-report.yml (KST 16:30)에서 단독 실행
+      # 중복 방지를 위해 여기서는 제거됨
 
       - name: Commit used keywords
         if: always()
