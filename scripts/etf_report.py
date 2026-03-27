@@ -32,7 +32,8 @@ log = logging.getLogger("etf-report")
 KST = timezone(timedelta(hours=9))
 
 # 환경변수
-ETF_API_URL = os.environ.get("ETF_API_URL", "") or "https://etfs-production.up.railway.app"
+ETF_API_URL = os.environ.get("ETF_API_URL", "") or "https://wp-etf.up.railway.app"
+ETF_REPORT_TOKEN = os.environ.get("ETF_REPORT_TOKEN", "") or "etf-wp-auto-2026-secret"
 WP_URL = os.environ.get("WP_URL", "")
 WP_USER = os.environ.get("WP_USERNAME", "")
 WP_PASS = os.environ.get("WP_APP_PASSWORD", "")
@@ -66,7 +67,8 @@ def fetch_etf_report(report_type: str = "blog-ready") -> dict:
     log.info(f"ETF 리포트 가져오는 중: {url}")
 
     try:
-        resp = requests.get(url, timeout=60)
+        headers = {"X-Report-Token": ETF_REPORT_TOKEN} if ETF_REPORT_TOKEN else {}
+        resp = requests.get(url, headers=headers, timeout=60)
         resp.raise_for_status()
         data = resp.json()
         log.info(f"리포트 수신 완료 ({len(json.dumps(data))} bytes)")
