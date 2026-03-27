@@ -132,6 +132,12 @@ CONTENT_ANGLES = [
     "문제 해결/트러블슈팅", "비용 절감 방법", "자동화 연계", "업데이트 소식",
 ]
 
+# 키워드 자동 보충용 기본 니치 (대시보드 미설정 시 폴백)
+DEFAULT_FALLBACK_NICHES = [
+    "ai-tools", "finance-invest", "side-income",
+    "tech-review", "gov-support", "life-economy",
+]
+
 # ── 단계별 수익화 설정 ──
 STAGE_CONFIG = {
     1: {"adsense_mode": True,  "quality_min": 85, "kw_mix": {"traffic": 1.0, "conversion": 0.0, "high_cpa": 0.0}},
@@ -388,10 +394,12 @@ class DynamicKeywordGenerator:
             pass
         return []
 
-    def generate(self, count=5):
-        """선택된 니치에서 다양한 키워드 동적 생성"""
-        # autoMode 체크
-        if SUPABASE_URL and SUPABASE_KEY:
+    def generate(self, count=5, fallback=False):
+        """선택된 니치에서 다양한 키워드 동적 생성
+        fallback=True: 정적 키워드 소진 시 호출. autoMode/니치 설정 무시하고 기본 니치로 생성.
+        """
+        # autoMode 체크 (폴백 모드에서는 스킵 — 키워드 없으면 무조건 생성해야 함)
+        if not fallback and SUPABASE_URL and SUPABASE_KEY:
             import requests as _req
             try:
                 _r = _req.get(f"{SUPABASE_URL}/rest/v1/dashboard_config?id=eq.global",
@@ -407,8 +415,14 @@ class DynamicKeywordGenerator:
 
         niches = self._get_dashboard_niches()
         if not niches:
-            log.info("  대시보드 니치 미선택 — 정적 키워드 폴백")
-            return None
+            if fallback:
+                niches = list(DEFAULT_FALLBACK_NICHES)
+                random.shuffle(niches)
+                niches = niches[:3]
+                log.info(f"  키워드 자동 보충 — 기본 니치 폴백: {niches}")
+            else:
+                log.info("  대시보드 니치 미선택 — 정적 키워드 폴백")
+                return None
 
         log.info(f"  동적 키워드 생성 — 니치: {niches}")
 
@@ -803,6 +817,183 @@ Unique Code: {unique_seed}
 - FAQ format: <h3>Question</h3><p>Answer</p>
 """
 
+# ═══════════════════════════════════════════════════════
+# Golden Mode 전용 프롬프트 — Gemini 피드백 3대 전략 반영
+# 1) 페르소나 주입 (15년차 전문가 Insider)
+# 2) 독점적 프레임워크 네이밍 ([영문3자리] + [법칙/매트릭스/시스템])
+# 3) 데이터 앵커링 (서론 3초 만에 수치 기반 권위 확보)
+# ═══════════════════════════════════════════════════════
+
+# 도입부 패턴 12종 — 매 글마다 랜덤 선택 (패턴 분석 방지)
+GOLDEN_INTRO_HOOKS = [
+    # 1. 역설 훅 — 통념 뒤집기
+    """도입부 패턴: [역설 훅]
+"대부분의 사람들이 ~라고 믿고 있지만, 실제 데이터는 정반대를 가리킵니다."
+→ 독자가 '상식'이라고 믿던 것을 구체적 수치로 뒤집으며 시작. 충격과 호기심을 동시에 유발.
+첫 문장에서 통념을 제시하고, 두 번째 문장에서 데이터로 즉시 반박하십시오.""",
+
+    # 2. 수치 폭탄 — 놀라운 통계 직격
+    """도입부 패턴: [수치 폭탄]
+첫 문장을 반드시 충격적인 숫자/통계로 시작하십시오. 예: "국내 ~시장 규모가 130조 원을 돌파했습니다."
+→ 수치 자체가 훅이 됩니다. 독자는 '이 정도인 줄 몰랐다'는 반응과 함께 글을 계속 읽습니다.
+세 번째 문장에서 "그런데 이 시장에서 실제로 수익을 내는 비율은 ~%에 불과합니다"로 긴장감을 추가.""",
+
+    # 3. 시간 대비 — 과거 vs 현재
+    """도입부 패턴: [시간 대비]
+"2년 전만 해도 ~였습니다. 그러나 지금은 완전히 다른 판이 열렸습니다."
+→ 과거와 현재의 극적인 변화를 대비시켜 '지금 알아야 할 이유'를 만듭니다.
+반드시 과거 수치와 현재 수치를 병렬 제시하여 변화의 크기를 체감시키십시오.""",
+
+    # 4. 실패 시나리오 — 손실 회피 심리
+    """도입부 패턴: [실패 시나리오]
+"이 글을 읽지 않고 ~를 시작한다면, 통계적으로 73%의 확률로 ~한 결과를 맞이합니다."
+→ 손실 회피 심리(Loss Aversion)를 자극합니다. 독자는 '실패하고 싶지 않다'는 본능으로 글을 끝까지 읽습니다.
+실패의 구체적 비용(시간/돈/기회비용)을 수치로 제시하십시오.""",
+
+    # 5. 질문 연타 — 3연속 공감 질문
+    """도입부 패턴: [질문 연타]
+3개의 연속 질문으로 시작하십시오. 각 질문은 독자의 현재 상황을 정확히 묘사해야 합니다.
+예: "매달 ~만 원을 넣고 있지만 수익률은 제자리입니까? ~를 해봤지만 결과가 없었습니까? 정보는 넘치는데 뭘 해야 할지 더 모르겠습니까?"
+→ 세 번째 질문 직후, "이 3가지 질문에 하나라도 해당된다면, 지금부터 제시하는 시스템이 답입니다."로 전환.""",
+
+    # 6. 결론 선행 — 핵심 먼저
+    """도입부 패턴: [결론 선행]
+"결론부터 말씀드리겠습니다. ~하는 가장 효과적인 방법은 [프레임워크 이름]입니다."
+→ 바쁜 독자의 시간을 존중하는 전문가적 어프로치. 결론을 먼저 던지고, '왜 이것이 최선인지' 데이터로 증명하는 구조.
+두 번째 문장에서 이 결론을 뒷받침하는 핵심 수치 1개를 즉시 제시하십시오.""",
+
+    # 7. 뉴스/트렌드 앵커 — 최신 사건 연결
+    """도입부 패턴: [뉴스 앵커]
+"2026년 ~월, [관련 기관/시장]에서 ~가 발표되었습니다. 이 변화가 의미하는 것은 단 하나입니다."
+→ 최신 트렌드/정책/시장 변화를 앵커로 삼아 글의 시의성을 확보합니다.
+뉴스 팩트 → 독자에게 미치는 영향 → 이 글에서 제시할 해법, 3단계로 전개.""",
+
+    # 8. 비유 도입 — 복잡한 개념을 일상으로
+    """도입부 패턴: [비유 도입]
+일상의 비유로 시작하되, 즉시 전문적 분석으로 전환하십시오.
+예: "~는 마치 [일상 비유]와 같습니다. 그러나 대부분은 [비유의 핵심 원리]를 무시한 채 ~하고 있습니다."
+→ 비유는 1~2문장으로 끝내고, 세 번째 문장부터 데이터와 수치로 전문가 모드 진입.""",
+
+    # 9. 경고문 — 긴급성 부여
+    """도입부 패턴: [경고문]
+"지금 ~하고 계시다면, 즉시 멈추십시오."
+→ 강한 경고로 시작하여 주의를 집중시킵니다. 두 번째 문장에서 '왜 멈춰야 하는지' 데이터로 근거 제시.
+세 번째 문장에서 "대신 ~하는 것이 [수치]% 더 효과적입니다"로 대안 제시.""",
+
+    # 10. 격차 제시 — 상위 vs 하위
+    """도입부 패턴: [격차 제시]
+"상위 5%는 ~하고, 나머지 95%는 ~합니다. 이 차이를 만드는 것은 단 하나의 시스템입니다."
+→ 엘리트와 대중의 격차를 수치로 보여주어 '나도 상위로 가고 싶다'는 욕구를 자극합니다.
+반드시 구체적 수치로 격차를 제시하고, 그 격차의 원인이 이 글의 주제임을 명시.""",
+
+    # 11. 비용 계산 — 기회비용 환산
+    """도입부 패턴: [비용 계산]
+"~를 모르고 지나치면, 연간 약 ~만 원의 기회비용이 발생합니다."
+→ 독자가 '안 읽으면 손해'라는 확신을 갖게 만듭니다. 기회비용을 연/월/일 단위로 환산하여 체감시키십시오.
+두 번째 문장에서 "반대로, 이 시스템을 적용하면 ~의 효과를 기대할 수 있습니다"로 긍정 전환.""",
+
+    # 12. 체크리스트 진단 — 자가 테스트
+    """도입부 패턴: [체크리스트 진단]
+"아래 3가지 중 2개 이상 해당된다면, 이 글은 반드시 읽어야 합니다."
+→ 짧은 자가 진단 체크리스트(3~4항목)를 제시합니다. 독자가 자신의 상태를 점검하며 몰입합니다.
+체크리스트 직후 "해당 항목이 많을수록, 지금부터 제시하는 [프레임워크]의 효과는 극대화됩니다."로 연결.""",
+]
+
+GOLDEN_DRAFT_PROMPT_KO = """# Role (역할)
+당신은 상위 1%의 정보력과 냉철한 분석력을 갖춘 15년 차 산업/금융/비즈니스 전문가입니다.
+당신의 목표는 레드오션에 널린 뻔한 정보가 아닌, 독자가 당장 실행할 수 있는 '시스템적 해결책'과 '압도적인 인사이트'를 제공하는 블로그 포스팅을 작성하는 것입니다.
+
+# Core Topic
+키워드: {keyword}
+검색의도: {intent}
+카테고리: {category}
+고유코드: {unique_seed}
+
+# Constraint (작성 제약 조건 — 반드시 준수)
+1. '제 지인', '제가 해봤는데' 같은 가벼운 경험담이나 감성적인 위로는 절대 배제할 것.
+2. 대신, 논리적이고 객관적인 데이터(수치, 확률, 통계, 비교표)를 활용하여 모든 주장을 뒷받침할 것.
+3. **독점적 프레임워크 네이밍 필수**: 이 글의 핵심 솔루션에 당신만의 독창적인 프레임워크 이름을 반드시 부여할 것.
+   네이밍 규칙: [영문 알파벳 3자리 약자] + [직관적 명사] 형태
+   예시: V.I.P 스노우볼, R.O.I 매트릭스, T.A.P 법칙, S.M.P 시스템
+   본문 내내 이 명칭을 반복하여 권위성을 확보할 것.
+4. **데이터 앵커링 필수**: 도입부 첫 3문장 안에 구체적인 수치/통계/확률을 배치하여 전문가로서의 권위를 즉시 확보할 것.
+   예시: "국내 ETF 시장 규모가 2026년 기준 130조 원을 돌파하며..." / "평균 실패율 73%인 이 방법 대신..."
+5. 문체는 단호하고 확신에 찬 전문가의 어조를 사용할 것 (~합니다, ~하십시오).
+   단, 전문 용어는 반드시 괄호로 쉬운 설명 병기: "MDD(최대 낙폭, 투자 기간 중 최대 손실폭)"
+6. 번역체/영어식 표현 절대 금지 → 한국어로 풀어쓰기
+   ("레버리지" → "지렛대 효과", "스케일링" → "규모 확장", "포트폴리오" → "투자 바구니" 또는 괄호 병기)
+7. 3개 이상 항목 나열 시 반드시 <ol> 또는 <ul>로 줄바꿈 정리. 한 문장에 나열 금지.
+
+# Output Structure (출력 구조 — 100% 준수)
+반드시 HTML 형식으로 다음 구조를 순서대로 출력하십시오.
+
+<title>[주제와 관련된 강력한 훅(Hook)을 담은 매혹적인 제목 — 키워드를 앞부분에 포함]</title>
+
+<p>(도입부 — 아래 패턴을 정확히 따를 것) 4~5문장.
+{intro_hook}
+도입부는 반드시 위 패턴의 지시를 100% 준수하여 작성하십시오.</p>
+
+<div class="key-point"><strong>이 글의 순서</strong><br/>(본문의 핵심 소제목 3~4개를 번호 리스트로 정리)</div>
+
+<h2>1. 기존의 방식이 실패할 수밖에 없는 이유</h2>
+<p>(문제 정의) 대중들이 알고 있는 상식의 허점을 데이터와 논리로 반박. 400~600자. <strong> 강조 3개 이상.</p>
+
+<h2>2. [당신이 창작한 독점적 프레임워크 이름] : 본질적 해결책</h2>
+<p>(이 글의 핵심 인사이트) 프레임워크의 구조를 단계별로 설명. 비교/정리 <table> 필수. 각 단계마다 구체적 수치/기대효과 포함. 600~800자.</p>
+
+<div class="tip-box"><strong>실전 적용 팁</strong><br/>(독자가 당장 오늘부터 실행할 수 있는 구체적인 액션 플랜 1가지)</div>
+
+<h2>3. [프레임워크] 심화 적용: 성과를 극대화하는 전략</h2>
+<p>(프레임워크를 고급 레벨로 확장. 실전 시나리오, 케이스 스터디, 응용 방법. 400~600자.)</p>
+
+<h2>4. 리스크 관리 및 시스템화 전략</h2>
+<p>(정보를 아는 것에서 끝나지 않고, 이를 자동화/시스템화하는 전문가적 조언. 400~600자.)</p>
+
+<blockquote><strong>인사이트 팩트 체크</strong><br/>(본문 내용을 뒷받침하는 결정적인 통계, 논리, 또는 전문가의 시각)</blockquote>
+
+<h2>5. 실행 로드맵: 지금 당장 시작하는 3단계</h2>
+<p>(구체적인 실행 단계를 <ol>로 정리. 각 단계에 예상 소요시간/비용/기대효과 포함.)</p>
+
+<div class="key-point"><strong>최종 핵심 요약 (Executive Summary)</strong><br/>
+(글의 전체 내용을 3줄 요약 + 프레임워크 이름 재언급 + 다음 행동을 유도하는 강력한 클로징)</div>
+
+=== HTML 규칙 (절대 준수) ===
+- <title>글제목</title>을 최상단에
+- <h2>, <h3>, <p>, <strong>, <ol>/<ul>, <table>, <blockquote> 사용
+- <div class="tip-box">, <div class="key-point"> 사용 가능
+- <h1> 금지 (워드프레스 자동 생성)
+- <table>은 반드시 <thead><tr><th>헤더</th></tr></thead><tbody><tr><td>내용</td></tr></tbody> 구조
+- 마크다운 문법 절대 금지: **bold**, ```code```, ## 제목 → HTML 태그만 사용
+- <strong> 강조 최소 10개
+- 분량: 5,000~7,000자 (군더더기 없이 알차게)
+- 연속으로 같은 블록(tip-box, key-point, blockquote) 2개 배치 금지
+"""
+
+GOLDEN_POLISH_PROMPT_KO = """아래 블로그 초안을 '업계 탑 전문가의 칼럼' 수준으로 업그레이드하세요.
+
+키워드: {keyword}
+
+=== Golden 폴리싱 규칙 ===
+1. **프레임워크 검증**: 독점적 프레임워크 이름이 있는지 확인. 없으면 [영문3자리]+[명사] 형태로 생성하여 삽입.
+   프레임워크 이름은 본문에 최소 5회 반복되어야 함 (권위성 확보).
+2. **데이터 앵커링 검증**: 도입부 3문장 안에 구체적 수치/통계가 있는지 확인. 없으면 해당 주제의 설득력 있는 데이터를 추가.
+3. **감성 제거**: "제 지인", "제가 해봤는데", "여러분", "~거든요", "~해요" 같은 소비자 톤 표현을 모두 제거.
+   → 전문가 톤으로 교체 (~합니다, ~하십시오, ~입니다)
+4. AI 특유 표현 제거: "다양한", "살펴보겠습니다", "알아보겠습니다", "관심이 높아지고 있습니다"
+   → 논리적이고 단정적인 표현으로 100% 교체
+5. 번역체 제거: "레버리지", "인사이더 정보", "스케일링" → 한국어 풀어쓰기 또는 괄호 병기
+6. 모든 주장에 구체적 수치/비교/출처 필수 (근거 없는 문장 삭제)
+7. 전문 용어에 괄호 풀이 확인: "ETF(여러 주식을 한 바구니에 담은 상품)"
+8. 구조 검증: 문제 정의 → 프레임워크 해결책 → 심화 → 리스크 → 실행 로드맵 → Executive Summary 순서
+9. Executive Summary가 없으면 마지막에 추가 (3줄 요약 + 프레임워크 재언급)
+10. <strong> 최소 10개, <table> 1개 이상, key-point/tip-box/blockquote 각 1개 이상
+11. HTML 구조 유지. 마크다운 잔재 발견 시 HTML로 교체.
+12. 분량 5,000~7,000자 유지. 군더더기 삭제, 부족하면 데이터 기반 콘텐츠 보강.
+
+초안:
+{draft}
+"""
+
 # ── 니치별 프롬프트 보강 템플릿 ──
 NICHE_PROMPT_INJECTION = """
 === 이 글의 스타일 가이드 ({niche_label}) ===
@@ -818,9 +1009,14 @@ NICHE_PROMPT_INJECTION = """
 """
 
 # ── 프롬프트 선택 함수 ──
-def get_prompts(lang="ko", adsense_mode=False, category=""):
+def get_prompts(lang="ko", adsense_mode=False, category="", golden_mode=False):
     """언어/모드/니치에 따라 프롬프트 반환 (니치 스타일 주입 포함)"""
-    if adsense_mode:
+    # Golden 모드 최우선 (Gemini 피드백 3대 전략: 페르소나+프레임워크+데이터앵커링)
+    if golden_mode and lang == "ko":
+        hook = random.choice(GOLDEN_INTRO_HOOKS)
+        draft_tmpl = GOLDEN_DRAFT_PROMPT_KO.replace("{intro_hook}", hook)
+        polish_tmpl = GOLDEN_POLISH_PROMPT_KO
+    elif adsense_mode:
         if lang == "en":
             draft_tmpl, polish_tmpl = ADSENSE_DRAFT_PROMPT_EN, POLISH_PROMPT_EN
         else:
@@ -859,14 +1055,14 @@ class ContentGenerator:
 
     def generate(self, keyword, intent="informational", category="",
                  unique_seed="", lang="ko", adsense_mode=False,
-                 preferred_draft=None, preferred_polish=None):
+                 preferred_draft=None, preferred_polish=None, golden_mode=False):
         """멀티모델 폴체인 + 언어/모드 분기 + 모델 선택 반영"""
         if not unique_seed:
             unique_seed = hashlib.md5(
                 f"{SITE_ID}-{keyword}-{datetime.now(KST).isoformat()}-{random.random()}".encode()
             ).hexdigest()[:12]
 
-        draft_tmpl, polish_tmpl = get_prompts(lang, adsense_mode, category=category)
+        draft_tmpl, polish_tmpl = get_prompts(lang, adsense_mode, category=category, golden_mode=golden_mode)
         prompt = draft_tmpl.format(keyword=keyword, intent=intent, category=category, unique_seed=unique_seed)
 
         draft = None
@@ -2840,7 +3036,7 @@ def should_run_now():
         return True  # 오류 시 안전하게 실행
 
 
-def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None, adsense_mode=False):
+def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None, adsense_mode=False, golden_mode=False):
     """단일 사이트 파이프라인. site_override가 있으면 해당 사이트 설정 사용."""
     global SITE_ID, WP_URL, WP_USER, WP_PASS
 
@@ -2889,6 +3085,14 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None
     effective_adsense = stage_cfg["adsense_mode"]
     if adsense_mode:  # CLI --adsense-mode override
         effective_adsense = True
+
+    # 골든타임 모드: Golden 전용 프롬프트 (Gemini 3대 전략) + Claude 폴리싱 + 품질 90+
+    if golden_mode:
+        # Golden 프롬프트 사용 (adsense_mode와 독립 — get_prompts에서 golden_mode 우선)
+        stage_cfg = {**stage_cfg, "quality_min": 90}
+        effective_polish_model = None  # Claude 폴리싱 항상 활성화
+        log.info("  [GOLDEN MODE] 전문가 페르소나 + 프레임워크 네이밍 + 데이터 앵커링")
+
     log.info(f"  수익화 단계: Stage {monetization_stage} (품질 {stage_cfg['quality_min']}+)")
 
     if not WP_URL:
@@ -2924,10 +3128,10 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None
     # 1순위: 정적 keywords.json (SEO slug/메타 포함된 큐레이션 키워드)
     keywords = km.select(count=count, pipeline=pipeline, kw_mix=stage_cfg["kw_mix"])
 
-    # 2순위: 동적 키워드 생성 폴백 (정적 키워드 소진 시)
+    # 2순위: 동적 키워드 생성 폴백 (정적 키워드 소진 시, 기본 니치로 자동 보충)
     if not keywords:
-        log.info("  정적 키워드 소진 → 동적 키워드 생성")
-        keywords = dkg.generate(count=count)
+        log.info("  정적 키워드 소진 → 동적 키워드 자동 보충")
+        keywords = dkg.generate(count=count, fallback=True)
 
     if not keywords:
         log.error("사용 가능한 키워드 없음!")
@@ -2963,7 +3167,8 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None
         content, cost_usd, content_length = cg.generate(
             keyword, intent, category, unique_seed,
             lang=effective_lang, adsense_mode=effective_adsense,
-            preferred_draft=effective_draft_model, preferred_polish=effective_polish_model
+            preferred_draft=effective_draft_model, preferred_polish=effective_polish_model,
+            golden_mode=golden_mode
         )
         if not content:
             fail += 1
@@ -3017,7 +3222,8 @@ def run_pipeline(count=5, dry_run=False, pipeline="autoblog", site_override=None
                 content2, cost2, len2 = cg.generate(
                     keyword, intent, category, "",
                     lang=effective_lang, adsense_mode=effective_adsense,
-                    preferred_draft=effective_draft_model, preferred_polish=effective_polish_model
+                    preferred_draft=effective_draft_model, preferred_polish=effective_polish_model,
+                    golden_mode=golden_mode
                 )
                 if content2:
                     content2 = cf.format(content2, keyword=keyword)
@@ -3146,7 +3352,7 @@ def _git_commit_used():
 # ═══════════════════════════════════════════════════════
 # 멀티사이트 실행
 # ═══════════════════════════════════════════════════════
-def run_all_sites(count=5, dry_run=False, pipeline="autoblog", adsense_mode=False):
+def run_all_sites(count=5, dry_run=False, pipeline="autoblog", adsense_mode=False, golden_mode=False):
     """Supabase에서 모든 active 사이트를 조회하고 순차적으로 파이프라인 실행"""
     check_api_status()
 
@@ -3177,7 +3383,7 @@ def run_all_sites(count=5, dry_run=False, pipeline="autoblog", adsense_mode=Fals
         log.info(f"{'#'*60}")
 
         try:
-            run_pipeline(count=count, dry_run=dry_run, pipeline=pipeline, site_override=site, adsense_mode=adsense_mode)
+            run_pipeline(count=count, dry_run=dry_run, pipeline=pipeline, site_override=site, adsense_mode=adsense_mode, golden_mode=golden_mode)
         except Exception as e:
             log.error(f"[{site['id']}] 파이프라인 오류: {e}")
 
@@ -3204,6 +3410,7 @@ def main():
     parser.add_argument("--email", default="contact@example.com", help="연락처 이메일")
     parser.add_argument("--niche", default="", help="니치/카테고리 필터 (재테크, 투자, 대출 등)")
     parser.add_argument("--polish", action="store_true", help="Claude AI 폴리싱 활성화 (비용 증가)")
+    parser.add_argument("--golden", action="store_true", help="골든타임 모드: 고품질 프롬프트 + Claude 폴리싱 + 품질 90+ 기준")
     args = parser.parse_args()
 
     # API 상태 체크 모드
@@ -3233,7 +3440,7 @@ def main():
     # 멀티사이트 모드
     if args.all_sites:
         run_all_sites(count=args.count, dry_run=args.dry_run, pipeline=args.pipeline,
-                      adsense_mode=args.adsense_mode)
+                      adsense_mode=args.adsense_mode, golden_mode=args.golden)
         return
 
     # 특정 사이트 지정
@@ -3243,7 +3450,7 @@ def main():
         site = _get_site_config(args.site_id)
         if site:
             run_pipeline(count=args.count, dry_run=args.dry_run, pipeline=args.pipeline,
-                         site_override=site, adsense_mode=args.adsense_mode)
+                         site_override=site, adsense_mode=args.adsense_mode, golden_mode=args.golden)
         else:
             log.error(f"사이트 '{args.site_id}' 를 찾을 수 없습니다.")
             sys.exit(1)
@@ -3254,7 +3461,7 @@ def main():
         log.error("WP_URL 환경변수 없음. --all-sites 또는 --site-id를 사용하세요.")
         sys.exit(1)
     run_pipeline(count=args.count, dry_run=args.dry_run, pipeline=args.pipeline,
-                 adsense_mode=args.adsense_mode)
+                 adsense_mode=args.adsense_mode, golden_mode=args.golden)
 
 
 if __name__ == "__main__":
