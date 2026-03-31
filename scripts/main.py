@@ -1859,6 +1859,13 @@ class AdSenseOptimizer:
     """발행 전 HTML 구조를 AdSense 친화적으로 정리"""
 
     def optimize(self, content):
+        # 0. HTML 문서 껍데기 제거 (AI가 생성하거나 수동 편집으로 삽입된 경우)
+        content = re.sub(r'<!DOCTYPE\s+html[^>]*>', '', content, flags=re.IGNORECASE)
+        content = re.sub(r'</?html[^>]*>', '', content, flags=re.IGNORECASE)
+        content = re.sub(r'<head[^>]*>.*?</head>', '', content, flags=re.IGNORECASE | re.DOTALL)
+        content = re.sub(r'</?body[^>]*>', '', content, flags=re.IGNORECASE)
+        content = re.sub(r'<meta[^>]*/?>', '', content, flags=re.IGNORECASE)
+
         # 1. H2 사이에 충분한 간격 확보 (Ad Inserter 플러그인용)
         content = re.sub(
             r'(</h2>)\s*(<h2)',
@@ -3008,7 +3015,14 @@ class ContentFormatter:
         return content
 
     def _clean_empty_tags(self, content):
-        """빈 태그, 불필요한 공백 정리"""
+        """빈 태그, 불필요한 공백, HTML 문서 태그 정리"""
+        # AI가 생성한 HTML 문서 껍데기 제거
+        content = _re.sub(r'<!DOCTYPE\s+html[^>]*>', '', content, flags=_re.IGNORECASE)
+        content = _re.sub(r'</?html[^>]*>', '', content, flags=_re.IGNORECASE)
+        content = _re.sub(r'</?head[^>]*>.*?</head>', '', content, flags=_re.IGNORECASE | _re.DOTALL)
+        content = _re.sub(r'</?body[^>]*>', '', content, flags=_re.IGNORECASE)
+        content = _re.sub(r'<meta[^>]*/?>', '', content, flags=_re.IGNORECASE)
+        # 빈 태그 정리
         content = _re.sub(r'<p[^>]*>\s*</p>', '', content)
         content = _re.sub(r'\n{3,}', '\n\n', content)
         return content
