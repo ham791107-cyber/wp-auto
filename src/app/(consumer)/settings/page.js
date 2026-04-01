@@ -38,7 +38,7 @@ export default function SettingsPage() {
   const { user, refreshProfile } = useAuth();
   const { displayName, planId } = useCurrentUser();
   const { plan, isPremiumOrAbove } = usePlanFeatures();
-  const { sites, activeSite, setActiveSite, refreshSites } = useUserSites();
+  const { sites, activeSite, setActiveSite, refreshSites, loading: sitesLoading } = useUserSites();
   const site = activeSite;
 
   // Config
@@ -98,12 +98,15 @@ export default function SettingsPage() {
       });
   }, [site?.id]);
 
-  // Auto-enter register mode if no site
+  // Site mode: register only if truly no sites after loading, reset to view when site exists
   useEffect(() => {
-    if (!site && sites.length === 0) {
+    if (sitesLoading) return;
+    if (site) {
+      setSiteMode('view');
+    } else if (sites.length === 0) {
       setSiteMode('register');
     }
-  }, [site, sites.length]);
+  }, [site, sites.length, sitesLoading]);
 
   // ── Step completion ──
   const siteConnected = !!site;
