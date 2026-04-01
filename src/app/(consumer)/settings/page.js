@@ -268,10 +268,11 @@ export default function SettingsPage() {
         setSetupLog(updatedLog);
         await persistSetupLog(updatedLog);
       } else {
+        const debugInfo = data.debug ? ` [repo: ${data.debug.repo}, token: ${data.debug.tokenSet ? 'set' : 'missing'}]` : '';
         const logEntry = {
           action: action.id, label: action.label,
           completed_at: new Date().toISOString(), status: 'failed',
-          error: data.error || '실패',
+          error: (data.error || '실패') + debugInfo,
         };
         const updatedLog = [...setupLog.filter(l => l.action !== action.id), logEntry];
         setSetupLog(updatedLog);
@@ -579,8 +580,14 @@ export default function SettingsPage() {
               <label style={st.label}>연락처 이메일</label>
               <InputField value={contactEmail} onChange={setContactEmail} placeholder="contact@example.com" />
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>
-              About, Privacy Policy, Contact 페이지 자동 생성에 사용됩니다.
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
+              <ActionButton variant="secondary" onClick={saveSettings} disabled={saving}
+                style={{ fontSize: 12, padding: '6px 14px' }}>
+                {saving ? '저장 중...' : '기본 정보 저장'}
+              </ActionButton>
+              <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>
+                About, Privacy Policy, Contact 페이지 생성에 사용
+              </span>
             </div>
           </div>
         </div>

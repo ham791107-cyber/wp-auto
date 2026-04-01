@@ -68,6 +68,16 @@ export async function POST(request) {
     return NextResponse.json({ success: true, action, message: `${action} triggered` });
   }
 
-  const error = await resp.text();
-  return NextResponse.json({ error: `GitHub API failed: ${resp.status}`, detail: error }, { status: resp.status });
+  const errorBody = await resp.text();
+  return NextResponse.json({
+    error: `GitHub API failed: ${resp.status}`,
+    detail: errorBody,
+    debug: {
+      repo: GITHUB_REPO,
+      workflow,
+      action,
+      tokenSet: !!GITHUB_TOKEN,
+      tokenPrefix: GITHUB_TOKEN ? GITHUB_TOKEN.slice(0, 6) + '...' : 'none',
+    },
+  }, { status: resp.status });
 }
