@@ -1,0 +1,33 @@
+name: Inject Mobile CSS to All Posts
+on:
+  workflow_dispatch:
+    inputs:
+      wp_url:
+        description: 'WordPress URL'
+        required: false
+      wp_username:
+        description: 'WP username'
+        required: false
+      wp_app_password:
+        description: 'WP app password'
+        required: false
+      dry_run:
+        description: 'Preview only (true/false)'
+        required: false
+        default: 'false'
+
+jobs:
+  inject:
+    runs-on: ubuntu-latest
+    env:
+      WP_URL: ${{ inputs.wp_url || secrets.WP_URL }}
+      WP_USERNAME: ${{ inputs.wp_username || secrets.WP_USERNAME }}
+      WP_APP_PASSWORD: ${{ inputs.wp_app_password || secrets.WP_APP_PASSWORD }}
+      DRY_RUN: ${{ inputs.dry_run || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - run: python scripts/inject_css_to_posts.py

@@ -1855,6 +1855,38 @@ class AffiliateManager:
 # ═══════════════════════════════════════════════════════
 # 6. AdSense HTML 최적화 — 발행 전 후처리
 # ═══════════════════════════════════════════════════════
+
+# 모바일 반응형 CSS (글 본문에 인라인 주입)
+INLINE_MOBILE_CSS = """<style>
+/* AutoBlog Mobile Responsive */
+.entry-content { max-width: 100% !important; padding: 0 !important; box-sizing: border-box; }
+.entry-content img { max-width: 100% !important; height: auto !important; border-radius: 8px; }
+.entry-content table { width: 100% !important; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; border-collapse: collapse; font-size: 14px; }
+.entry-content th, .entry-content td { padding: 10px 12px; border: 1px solid #e2e8f0; }
+.entry-content th { background: #f8fafc; font-weight: 700; }
+.entry-content blockquote { margin: 16px 0; padding: 16px 20px; border-left: 4px solid #6366f1; background: #f8fafc; border-radius: 0 8px 8px 0; }
+.entry-content .tip-box { padding: 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; margin: 16px 0; }
+.entry-content .key-point { padding: 16px; background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; margin: 16px 0; }
+.entry-content ul, .entry-content ol { padding-left: 20px; }
+.entry-content li { margin-bottom: 6px; }
+.entry-content h2 { font-size: 22px; font-weight: 800; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #f1f5f9; }
+.entry-content h3 { font-size: 18px; font-weight: 700; margin: 24px 0 12px; }
+.entry-content p { margin-bottom: 16px; line-height: 1.8; }
+@media (max-width: 768px) {
+  .entry-content h2 { font-size: 19px; margin: 24px 0 12px; }
+  .entry-content h3 { font-size: 16px; }
+  .entry-content p { font-size: 15px; line-height: 1.8; }
+  .entry-content { font-size: 15px; }
+  .site-main, .content-area, .inside-article { padding: 0 6px !important; }
+  .grid-container { padding: 0 4px !important; }
+}
+@media (max-width: 480px) {
+  .entry-content h2 { font-size: 17px; }
+  .entry-content p { font-size: 14px; }
+  .entry-content { font-size: 14px; }
+}
+</style>"""
+
 class AdSenseOptimizer:
     """발행 전 HTML 구조를 AdSense 친화적으로 정리"""
 
@@ -1887,6 +1919,10 @@ class AdSenseOptimizer:
                 if '<h2' in content:
                     idx = content.index('<h2')
                     content = content[:idx] + toc + content[idx:]
+
+        # 5. 모바일 반응형 CSS 인라인 주입 (WordPress 추가 CSS 접근 불가 시 폴백)
+        if '<style' not in content[:200]:
+            content = INLINE_MOBILE_CSS + "\n" + content
 
         return content
 
