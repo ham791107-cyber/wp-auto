@@ -615,12 +615,24 @@ function VercelStep() {
         <tbody>
           <tr><td style={s.td}>NEXT_PUBLIC_SUPABASE_URL</td><td style={s.td}>Supabase Project URL</td></tr>
           <tr><td style={s.td}>NEXT_PUBLIC_SUPABASE_ANON_KEY</td><td style={s.td}>Supabase anon key</td></tr>
+          <tr><td style={{ ...s.td, fontWeight: 600 }}>GITHUB_TOKEN</td><td style={s.td}>GitHub Personal Access Token (Actions 권한 필요)</td></tr>
+          <tr><td style={{ ...s.td, fontWeight: 600 }}>GITHUB_REPO</td><td style={s.td}>내계정/wp-auto (Fork한 저장소 경로)</td></tr>
         </tbody>
       </table>
+
+      <div style={s.warnBox}>
+        <strong>GITHUB_TOKEN과 GITHUB_REPO는 필수!</strong>
+        <p style={{ margin: '6px 0 0', fontSize: 13 }}>
+          이 두 변수가 없으면 대시보드 설정 페이지의 "메뉴 설정", "CSS 주입", "첫 발행" 버튼이 작동하지 않습니다.
+          GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens에서 생성하세요.
+          Repository permissions에서 <strong>Actions: Read and write</strong>가 필요합니다.
+        </p>
+      </div>
 
       <StepList steps={[
         '"Deploy" 클릭 → 1~2분 후 배포 완료!',
         '배포된 URL 확인 (예: my-autoblog.vercel.app)',
+        'Supabase → Authentication → URL Configuration → Site URL을 배포된 URL로 업데이트',
       ]} />
 
       <h3 style={s.h3}>3. 커스텀 도메인 연결 (선택)</h3>
@@ -738,20 +750,53 @@ function SecretsStep() {
 function FirstRunStep() {
   return (
     <div>
-      <h2 style={s.h2}>첫 발행 테스트</h2>
+      <h2 style={s.h2}>대시보드 가입 + 첫 발행</h2>
       <p style={s.p}>
-        모든 설정이 완료되었습니다! 이제 실제로 글이 발행되는지 테스트합니다.
+        모든 인프라 설정이 완료되었습니다! 이제 대시보드에서 가입하고 블로그를 연결합니다.
       </p>
 
-      <h3 style={s.h3}>수동 테스트 실행</h3>
+      <h3 style={s.h3}>1. 대시보드 회원가입</h3>
       <StepList steps={[
-        'Fork한 저장소 → Actions 탭',
-        '좌측에서 "Auto Publish" (또는 publish) 워크플로우 선택',
-        '"Run workflow" 드롭다운 클릭',
-        '"Run workflow" 버튼 클릭',
-        '실행이 시작되면 노란 원이 표시됩니다',
-        '3~5분 후 초록 체크가 나오면 성공!',
+        '배포된 Vercel URL (예: my-autoblog.vercel.app) 접속',
+        '"회원가입" 탭 클릭 → 이름, 이메일, 비밀번호 입력',
+        '가입 즉시 대시보드 진입 (7일 Premium 무료 체험 시작)',
       ]} />
+
+      <h3 style={s.h3}>2. 온보딩 진행</h3>
+      <p style={s.p}>가입 후 자동으로 나타나는 온보딩 5단계를 순서대로 진행합니다:</p>
+      <StepList steps={[
+        '워드프레스 연결: URL + 사용자명 + 앱 비밀번호 입력 → "연결 테스트" 성공 확인',
+        '카테고리 선택: 최소 2개 선택 (예: AI 도구 + 재테크)',
+        '발행 스케줄: 하루 4회 추천 (빠른 글 축적)',
+        '블로그 단계: 현재 상태에 맞게 선택',
+        '"시작하기" 클릭 → 대시보드 진입',
+      ]} />
+
+      <h3 style={s.h3}>3. 초기 블로그 세팅 (설정 페이지)</h3>
+      <p style={s.p}>대시보드 → <strong>설정</strong> 페이지에서 4가지 버튼을 <strong>순서대로</strong> 실행합니다:</p>
+      <table style={s.table}>
+        <thead>
+          <tr>
+            <th style={s.th}>순서</th>
+            <th style={s.th}>버튼</th>
+            <th style={s.th}>역할</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style={s.td}>1</td><td style={{ ...s.td, fontWeight: 600 }}>메뉴 자동 설정</td><td style={s.td}>카테고리 + 네비게이션 메뉴 생성</td></tr>
+          <tr><td style={s.td}>2</td><td style={{ ...s.td, fontWeight: 600 }}>필수 페이지 생성</td><td style={s.td}>About, Privacy Policy 등 애드센스 필수 페이지</td></tr>
+          <tr><td style={s.td}>3</td><td style={{ ...s.td, fontWeight: 600 }}>모바일 CSS 적용</td><td style={s.td}>반응형 디자인 스타일링</td></tr>
+          <tr><td style={s.td}>4</td><td style={{ ...s.td, fontWeight: 600 }}>첫 글 발행</td><td style={s.td}>AI가 3편 자동 작성/발행 (5~10분)</td></tr>
+        </tbody>
+      </table>
+
+      <div style={s.warnBox}>
+        <strong>4개 모두 반드시 순서대로 실행하세요!</strong>
+        <p style={{ margin: '6px 0 0', fontSize: 13 }}>
+          애드센스 승인에 필요한 필수 페이지와 초기 콘텐츠가 생성됩니다.
+          각 버튼 클릭 후 GitHub Actions 탭에서 초록 체크(성공)를 확인하세요.
+        </p>
+      </div>
 
       <div style={s.tipBox}>
         <div style={s.tipTitle}>성공 확인 방법</div>
