@@ -4,42 +4,741 @@
   "monetization_stage": 1,
   "_stage_guide": "1=AdSense승인전(어필리에이트0%), 2=승인후(쿠팡20%), 3=본격수익화(쿠팡+텐핑50%)",
   "_niche": "생활경제 / 정부지원 / 부업 / 절세 / 보험",
-  "niches": ["gov-support", "life-economy", "side-income", "finance-invest"],
+  "niches": [
+    "gov-support",
+    "life-economy",
+    "side-income",
+    "finance-invest"
+  ],
   "keywords": [
-    {"keyword": "2026 정부지원금 총정리 놓치면 손해", "type": "traffic", "intent": "informational", "category": "정부지원·복지", "pipeline": "autoblog", "slug": "gov-subsidy-total-guide-2026", "focus_keyword": "정부지원금 총정리 2026"},
-    {"keyword": "청년 정부지원금 2026 신청 방법", "type": "traffic", "intent": "informational", "category": "정부지원·복지", "pipeline": "autoblog", "slug": "youth-gov-support-2026", "focus_keyword": "청년 정부지원금 2026"},
-    {"keyword": "소상공인 지원금 2026 종류별 신청 가이드", "type": "traffic", "intent": "informational", "category": "정부지원·복지", "pipeline": "autoblog", "slug": "small-biz-support-2026", "focus_keyword": "소상공인 지원금 2026"},
-    {"keyword": "육아휴직 급여 2026 변경사항 총정리", "type": "traffic", "intent": "informational", "category": "정부지원·복지", "pipeline": "autoblog", "slug": "parental-leave-pay-2026", "focus_keyword": "육아휴직 급여 2026"},
-    {"keyword": "국민연금 조기수령 vs 연기수령 손익계산", "type": "traffic", "intent": "informational", "category": "정부지원·복지", "pipeline": "autoblog", "slug": "national-pension-early-vs-delay", "focus_keyword": "국민연금 조기수령"},
-    {"keyword": "실업급여 수급조건 2026 자진퇴사도 가능?", "type": "traffic", "intent": "informational", "category": "정부지원·복지", "pipeline": "autoblog", "slug": "unemployment-benefit-2026", "focus_keyword": "실업급여 수급조건 2026"},
-    {"keyword": "기초연금 수급자격 2026 소득기준 변경", "type": "traffic", "intent": "informational", "category": "정부지원·복지", "pipeline": "autoblog", "slug": "basic-pension-eligibility-2026", "focus_keyword": "기초연금 수급자격"},
-
-    {"keyword": "연말정산 환급 많이 받는 법 2026", "type": "traffic", "intent": "informational", "category": "절세·세금", "pipeline": "autoblog", "slug": "year-end-tax-refund-tips-2026", "focus_keyword": "연말정산 환급 많이 받는 법"},
-    {"keyword": "프리랜서 종합소득세 절세 방법 5가지", "type": "traffic", "intent": "informational", "category": "절세·세금", "pipeline": "autoblog", "slug": "freelancer-tax-saving-5tips", "focus_keyword": "프리랜서 종합소득세 절세"},
-    {"keyword": "소상공인 부가세 절세 전략 실전", "type": "traffic", "intent": "informational", "category": "절세·세금", "pipeline": "autoblog", "slug": "small-biz-vat-saving", "focus_keyword": "소상공인 부가세 절세"},
-    {"keyword": "ISA 계좌 세금혜택 2026 비과세 한도", "type": "traffic", "intent": "informational", "category": "절세·세금", "pipeline": "autoblog", "slug": "isa-account-tax-benefit-2026", "focus_keyword": "ISA 계좌 세금혜택"},
-    {"keyword": "세금 3.3% 프리랜서 종합소득세 신고 방법", "type": "traffic", "intent": "informational", "category": "절세·세금", "pipeline": "autoblog", "slug": "freelancer-3-3-tax-filing", "focus_keyword": "3.3% 종합소득세 신고"},
-    {"keyword": "부동산 양도소득세 계산법 2026 절세팁", "type": "traffic", "intent": "informational", "category": "절세·세금", "pipeline": "autoblog", "slug": "property-capital-gains-tax-2026", "focus_keyword": "양도소득세 계산법"},
-
-    {"keyword": "직장인 부업 추천 2026 현실 수익 공개", "type": "traffic", "intent": "informational", "category": "부업·수익화", "pipeline": "autoblog", "slug": "employee-side-job-2026", "focus_keyword": "직장인 부업 추천 2026"},
-    {"keyword": "블로그 수익화 초보 가이드 월 100만원", "type": "traffic", "intent": "informational", "category": "부업·수익화", "pipeline": "autoblog", "slug": "blog-monetization-beginner", "focus_keyword": "블로그 수익화 초보"},
-    {"keyword": "쿠팡 파트너스 수익 인증 현실 후기", "type": "traffic", "intent": "informational", "category": "부업·수익화", "pipeline": "autoblog", "slug": "coupang-partners-real-review", "focus_keyword": "쿠팡 파트너스 수익"},
-    {"keyword": "재능 판매 플랫폼 비교 크몽 숨고 탈잉", "type": "traffic", "intent": "informational", "category": "부업·수익화", "pipeline": "autoblog", "slug": "talent-platform-comparison", "focus_keyword": "재능 판매 플랫폼 비교"},
-    {"keyword": "주부 부업 추천 2026 집에서 할 수 있는", "type": "traffic", "intent": "informational", "category": "부업·수익화", "pipeline": "autoblog", "slug": "housewife-side-job-2026", "focus_keyword": "주부 부업 추천"},
-    {"keyword": "프리랜서 월 500만원 수입 만드는 로드맵", "type": "traffic", "intent": "informational", "category": "부업·수익화", "pipeline": "autoblog", "slug": "freelancer-5m-roadmap", "focus_keyword": "프리랜서 수입 로드맵"},
-
-    {"keyword": "실비보험 가입 비교 2026 연령별 추천", "type": "conversion", "intent": "transactional", "category": "보험·금융", "pipeline": "autoblog", "slug": "health-insurance-age-comparison-2026", "focus_keyword": "실비보험 추천 2026"},
-    {"keyword": "신용점수 올리는 방법 2026 빠르게", "type": "traffic", "intent": "informational", "category": "보험·금융", "pipeline": "autoblog", "slug": "credit-score-boost-2026", "focus_keyword": "신용점수 올리는 방법"},
-    {"keyword": "주택담보대출 금리 비교 2026 최저금리", "type": "conversion", "intent": "transactional", "category": "보험·금융", "pipeline": "autoblog", "slug": "mortgage-rate-comparison-2026", "focus_keyword": "주택담보대출 금리 비교"},
-    {"keyword": "적금 금리 비교 2026 TOP 10 은행별", "type": "conversion", "intent": "transactional", "category": "보험·금융", "pipeline": "autoblog", "slug": "savings-rate-comparison-2026", "focus_keyword": "적금 금리 비교 2026"},
-    {"keyword": "자동차보험 비교견적 꿀팁 최대 할인", "type": "conversion", "intent": "transactional", "category": "보험·금융", "pipeline": "autoblog", "slug": "car-insurance-comparison-tips", "focus_keyword": "자동차보험 비교견적"},
-    {"keyword": "CMA 통장 추천 2026 파킹통장 대안", "type": "traffic", "intent": "informational", "category": "보험·금융", "pipeline": "autoblog", "slug": "cma-account-recommendation-2026", "focus_keyword": "CMA 통장 추천"},
-
-    {"keyword": "1인 가구 생활비 절약법 실전 가이드", "type": "traffic", "intent": "informational", "category": "생활비·살림", "pipeline": "autoblog", "slug": "single-living-cost-saving", "focus_keyword": "1인 가구 생활비 절약"},
-    {"keyword": "전월세 계약 체크리스트 사기 예방", "type": "traffic", "intent": "informational", "category": "생활비·살림", "pipeline": "autoblog", "slug": "lease-contract-checklist-2026", "focus_keyword": "전월세 계약 체크리스트"},
-    {"keyword": "가계부 작성법 초보 가이드 앱 추천", "type": "traffic", "intent": "informational", "category": "생활비·살림", "pipeline": "autoblog", "slug": "household-budget-beginner", "focus_keyword": "가계부 작성법"},
-    {"keyword": "식비 절약 방법 한달 30만원 식단", "type": "traffic", "intent": "informational", "category": "생활비·살림", "pipeline": "autoblog", "slug": "food-budget-300k-month", "focus_keyword": "식비 절약 방법"},
-    {"keyword": "전기세 절약 꿀팁 2026 여름 겨울", "type": "traffic", "intent": "informational", "category": "생활비·살림", "pipeline": "autoblog", "slug": "electricity-saving-tips-2026", "focus_keyword": "전기세 절약 꿀팁"},
-    {"keyword": "중고차 구매 체크리스트 사기 피하는 법", "type": "traffic", "intent": "informational", "category": "생활비·살림", "pipeline": "autoblog", "slug": "used-car-buying-checklist", "focus_keyword": "중고차 구매 체크리스트"}
+    {
+      "keyword": "2026 정부지원금 총정리 놓치면 손해",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "gov-subsidy-total-guide-2026",
+      "focus_keyword": "정부지원금 총정리 2026"
+    },
+    {
+      "keyword": "청년 정부지원금 2026 신청 방법",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "youth-gov-support-2026",
+      "focus_keyword": "청년 정부지원금 2026"
+    },
+    {
+      "keyword": "소상공인 지원금 2026 종류별 신청 가이드",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "small-biz-support-2026",
+      "focus_keyword": "소상공인 지원금 2026"
+    },
+    {
+      "keyword": "육아휴직 급여 2026 변경사항 총정리",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "parental-leave-pay-2026",
+      "focus_keyword": "육아휴직 급여 2026"
+    },
+    {
+      "keyword": "국민연금 조기수령 vs 연기수령 손익계산",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "national-pension-early-vs-delay",
+      "focus_keyword": "국민연금 조기수령"
+    },
+    {
+      "keyword": "실업급여 수급조건 2026 자진퇴사도 가능?",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "unemployment-benefit-2026",
+      "focus_keyword": "실업급여 수급조건 2026"
+    },
+    {
+      "keyword": "기초연금 수급자격 2026 소득기준 변경",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "basic-pension-eligibility-2026",
+      "focus_keyword": "기초연금 수급자격"
+    },
+    {
+      "keyword": "연말정산 환급 많이 받는 법 2026",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "year-end-tax-refund-tips-2026",
+      "focus_keyword": "연말정산 환급 많이 받는 법"
+    },
+    {
+      "keyword": "프리랜서 종합소득세 절세 방법 5가지",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "freelancer-tax-saving-5tips",
+      "focus_keyword": "프리랜서 종합소득세 절세"
+    },
+    {
+      "keyword": "소상공인 부가세 절세 전략 실전",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "small-biz-vat-saving",
+      "focus_keyword": "소상공인 부가세 절세"
+    },
+    {
+      "keyword": "ISA 계좌 세금혜택 2026 비과세 한도",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "isa-account-tax-benefit-2026",
+      "focus_keyword": "ISA 계좌 세금혜택"
+    },
+    {
+      "keyword": "세금 3.3% 프리랜서 종합소득세 신고 방법",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "freelancer-3-3-tax-filing",
+      "focus_keyword": "3.3% 종합소득세 신고"
+    },
+    {
+      "keyword": "부동산 양도소득세 계산법 2026 절세팁",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "property-capital-gains-tax-2026",
+      "focus_keyword": "양도소득세 계산법"
+    },
+    {
+      "keyword": "직장인 부업 추천 2026 현실 수익 공개",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "employee-side-job-2026",
+      "focus_keyword": "직장인 부업 추천 2026"
+    },
+    {
+      "keyword": "블로그 수익화 초보 가이드 월 100만원",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "blog-monetization-beginner",
+      "focus_keyword": "블로그 수익화 초보"
+    },
+    {
+      "keyword": "쿠팡 파트너스 수익 인증 현실 후기",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "coupang-partners-real-review",
+      "focus_keyword": "쿠팡 파트너스 수익"
+    },
+    {
+      "keyword": "재능 판매 플랫폼 비교 크몽 숨고 탈잉",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "talent-platform-comparison",
+      "focus_keyword": "재능 판매 플랫폼 비교"
+    },
+    {
+      "keyword": "주부 부업 추천 2026 집에서 할 수 있는",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "housewife-side-job-2026",
+      "focus_keyword": "주부 부업 추천"
+    },
+    {
+      "keyword": "프리랜서 월 500만원 수입 만드는 로드맵",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "freelancer-5m-roadmap",
+      "focus_keyword": "프리랜서 수입 로드맵"
+    },
+    {
+      "keyword": "실비보험 가입 비교 2026 연령별 추천",
+      "type": "conversion",
+      "intent": "transactional",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "health-insurance-age-comparison-2026",
+      "focus_keyword": "실비보험 추천 2026"
+    },
+    {
+      "keyword": "신용점수 올리는 방법 2026 빠르게",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "credit-score-boost-2026",
+      "focus_keyword": "신용점수 올리는 방법"
+    },
+    {
+      "keyword": "주택담보대출 금리 비교 2026 최저금리",
+      "type": "conversion",
+      "intent": "transactional",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "mortgage-rate-comparison-2026",
+      "focus_keyword": "주택담보대출 금리 비교"
+    },
+    {
+      "keyword": "적금 금리 비교 2026 TOP 10 은행별",
+      "type": "conversion",
+      "intent": "transactional",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "savings-rate-comparison-2026",
+      "focus_keyword": "적금 금리 비교 2026"
+    },
+    {
+      "keyword": "자동차보험 비교견적 꿀팁 최대 할인",
+      "type": "conversion",
+      "intent": "transactional",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "car-insurance-comparison-tips",
+      "focus_keyword": "자동차보험 비교견적"
+    },
+    {
+      "keyword": "CMA 통장 추천 2026 파킹통장 대안",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "cma-account-recommendation-2026",
+      "focus_keyword": "CMA 통장 추천"
+    },
+    {
+      "keyword": "1인 가구 생활비 절약법 실전 가이드",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "single-living-cost-saving",
+      "focus_keyword": "1인 가구 생활비 절약"
+    },
+    {
+      "keyword": "전월세 계약 체크리스트 사기 예방",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "lease-contract-checklist-2026",
+      "focus_keyword": "전월세 계약 체크리스트"
+    },
+    {
+      "keyword": "가계부 작성법 초보 가이드 앱 추천",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "household-budget-beginner",
+      "focus_keyword": "가계부 작성법"
+    },
+    {
+      "keyword": "식비 절약 방법 한달 30만원 식단",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "food-budget-300k-month",
+      "focus_keyword": "식비 절약 방법"
+    },
+    {
+      "keyword": "전기세 절약 꿀팁 2026 여름 겨울",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "electricity-saving-tips-2026",
+      "focus_keyword": "전기세 절약 꿀팁"
+    },
+    {
+      "keyword": "중고차 구매 체크리스트 사기 피하는 법",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "used-car-buying-checklist",
+      "focus_keyword": "중고차 구매 체크리스트"
+    },
+    {
+      "keyword": "2026 신혼부부 정부지원금 신청방법 총정리",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "newlywed-gov-support-2026",
+      "focus_keyword": "신혼부부 정부지원금 2026"
+    },
+    {
+      "keyword": "다자녀 혜택 2026 셋째부터 대폭 확대",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "multi-child-benefits-2026",
+      "focus_keyword": "다자녀 혜택 2026"
+    },
+    {
+      "keyword": "긴급복지 지원제도 신청 자격 및 절차",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "emergency-welfare-support-guide",
+      "focus_keyword": "긴급복지 지원제도"
+    },
+    {
+      "keyword": "장애인 복지카드 혜택 2026 할인 총정리",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "disability-welfare-card-2026",
+      "focus_keyword": "장애인 복지카드 혜택"
+    },
+    {
+      "keyword": "국민취업지원제도 2유형 신청 후기 꿀팁",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "employment-support-type2-2026",
+      "focus_keyword": "국민취업지원제도 2유형"
+    },
+    {
+      "keyword": "주거급여 신청 조건 2026 월세 지원 얼마?",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "housing-benefit-2026",
+      "focus_keyword": "주거급여 신청 조건 2026"
+    },
+    {
+      "keyword": "한부모가정 지원금 2026 자격 및 혜택",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "single-parent-support-2026",
+      "focus_keyword": "한부모가정 지원금 2026"
+    },
+    {
+      "keyword": "근로장려금 신청 2026 자격조건 지급일",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "eitc-application-2026",
+      "focus_keyword": "근로장려금 신청 2026"
+    },
+    {
+      "keyword": "무주택자 청약 전략 2026 당첨 확률 높이기",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "housing-subscription-strategy-2026",
+      "focus_keyword": "무주택자 청약 전략"
+    },
+    {
+      "keyword": "출산지원금 2026 지역별 혜택 비교",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "정부지원·복지",
+      "pipeline": "autoblog",
+      "slug": "childbirth-support-by-region-2026",
+      "focus_keyword": "출산지원금 2026"
+    },
+    {
+      "keyword": "증여세 면제한도 2026 부모 자녀 절세법",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "gift-tax-exemption-2026",
+      "focus_keyword": "증여세 면제한도 2026"
+    },
+    {
+      "keyword": "상속세 계산법 2026 공제항목 총정리",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "inheritance-tax-calculation-2026",
+      "focus_keyword": "상속세 계산법 2026"
+    },
+    {
+      "keyword": "월세 세액공제 받는 방법 2026 환급금",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "rent-tax-credit-2026",
+      "focus_keyword": "월세 세액공제 2026"
+    },
+    {
+      "keyword": "사업자 절세 방법 5가지 세무사가 알려주는",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "business-tax-saving-5tips",
+      "focus_keyword": "사업자 절세 방법"
+    },
+    {
+      "keyword": "퇴직금 세금 계산기 2026 절세 전략",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "retirement-pay-tax-2026",
+      "focus_keyword": "퇴직금 세금 계산"
+    },
+    {
+      "keyword": "홈택스 종합소득세 신고 방법 초보 완벽가이드",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "hometax-income-tax-guide",
+      "focus_keyword": "홈택스 종합소득세 신고"
+    },
+    {
+      "keyword": "개인사업자 vs 법인 세금 비교 어떤게 유리?",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "sole-vs-corp-tax-comparison",
+      "focus_keyword": "개인사업자 법인 세금 비교"
+    },
+    {
+      "keyword": "2026 연말정산 달라지는 점 미리 준비",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "절세·세금",
+      "pipeline": "autoblog",
+      "slug": "year-end-tax-changes-2026",
+      "focus_keyword": "2026 연말정산 변경"
+    },
+    {
+      "keyword": "AI 부업 추천 2026 챗GPT로 돈 버는 법",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "ai-side-job-chatgpt-2026",
+      "focus_keyword": "AI 부업 추천 2026"
+    },
+    {
+      "keyword": "유튜브 수익화 조건 2026 초보 시작 가이드",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "youtube-monetization-beginner-2026",
+      "focus_keyword": "유튜브 수익화 조건 2026"
+    },
+    {
+      "keyword": "스마트스토어 창업 현실 수익 후기 2026",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "smartstore-startup-review-2026",
+      "focus_keyword": "스마트스토어 창업 현실"
+    },
+    {
+      "keyword": "전자책 출판 부업 월 수익 50만원 만들기",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "ebook-publishing-side-income",
+      "focus_keyword": "전자책 출판 부업"
+    },
+    {
+      "keyword": "배달 라이더 부업 시급 현실 2026",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "delivery-rider-side-job-2026",
+      "focus_keyword": "배달 라이더 부업 시급"
+    },
+    {
+      "keyword": "인스타그램 수익화 방법 팔로워 1000명부터",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "instagram-monetization-1k-followers",
+      "focus_keyword": "인스타그램 수익화 방법"
+    },
+    {
+      "keyword": "크몽 부업 초보 가이드 인기 서비스 TOP 5",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "kmong-side-job-top5-2026",
+      "focus_keyword": "크몽 부업 초보"
+    },
+    {
+      "keyword": "해외 구매대행 부업 시작하기 마진율 계산",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "overseas-purchasing-agent-guide",
+      "focus_keyword": "해외 구매대행 부업"
+    },
+    {
+      "keyword": "온라인 강의 만들어 파는 법 클래스101",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "online-course-creation-guide",
+      "focus_keyword": "온라인 강의 만들기"
+    },
+    {
+      "keyword": "재택 부업 추천 2026 진짜 되는 것만 정리",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "부업·수익화",
+      "pipeline": "autoblog",
+      "slug": "work-from-home-side-jobs-2026",
+      "focus_keyword": "재택 부업 추천 2026"
+    },
+    {
+      "keyword": "저축보험 vs 저축은행 적금 어디가 유리?",
+      "type": "conversion",
+      "intent": "transactional",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "savings-insurance-vs-bank",
+      "focus_keyword": "저축보험 적금 비교"
+    },
+    {
+      "keyword": "ETF 초보 추천 2026 월배당 TOP 5",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "etf-beginner-monthly-dividend-2026",
+      "focus_keyword": "ETF 초보 추천 2026"
+    },
+    {
+      "keyword": "비상금 대출 금리 비교 2026 카카오 토스 케이뱅크",
+      "type": "conversion",
+      "intent": "transactional",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "emergency-loan-comparison-2026",
+      "focus_keyword": "비상금 대출 금리 비교"
+    },
+    {
+      "keyword": "체크카드 추천 2026 혜택 좋은 TOP 10",
+      "type": "conversion",
+      "intent": "transactional",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "debit-card-recommendation-2026",
+      "focus_keyword": "체크카드 추천 2026"
+    },
+    {
+      "keyword": "개인형 IRP 세액공제 2026 절세 전략",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "irp-tax-deduction-strategy-2026",
+      "focus_keyword": "IRP 세액공제 2026"
+    },
+    {
+      "keyword": "토스 주식 투자 초보 가이드 소수점 매매",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "toss-stock-beginner-guide",
+      "focus_keyword": "토스 주식 투자 초보"
+    },
+    {
+      "keyword": "신용대출 금리 낮추는 법 2026 협상 꿀팁",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "credit-loan-rate-negotiation-2026",
+      "focus_keyword": "신용대출 금리 낮추기"
+    },
+    {
+      "keyword": "보험 해지 vs 감액완납 뭐가 유리할까?",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "insurance-cancel-vs-reduce",
+      "focus_keyword": "보험 해지 감액완납 비교"
+    },
+    {
+      "keyword": "연금저축펀드 추천 2026 수익률 비교",
+      "type": "conversion",
+      "intent": "transactional",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "pension-fund-recommendation-2026",
+      "focus_keyword": "연금저축펀드 추천 2026"
+    },
+    {
+      "keyword": "무직자 대출 가능한 곳 2026 조건 정리",
+      "type": "conversion",
+      "intent": "transactional",
+      "category": "보험·금융",
+      "pipeline": "autoblog",
+      "slug": "unemployed-loan-options-2026",
+      "focus_keyword": "무직자 대출 가능한 곳"
+    },
+    {
+      "keyword": "2인 가구 생활비 평균 2026 현실적 절약법",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "couple-living-cost-2026",
+      "focus_keyword": "2인 가구 생활비 평균"
+    },
+    {
+      "keyword": "통신비 절약 방법 알뜰폰 요금제 비교 2026",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "phone-bill-saving-mvno-2026",
+      "focus_keyword": "알뜰폰 요금제 비교 2026"
+    },
+    {
+      "keyword": "마트 vs 온라인 장보기 어디가 싸나 비교",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "mart-vs-online-grocery-comparison",
+      "focus_keyword": "마트 온라인 장보기 비교"
+    },
+    {
+      "keyword": "교통비 절약 꿀팁 2026 K패스 알뜰교통카드",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "transport-saving-kpass-2026",
+      "focus_keyword": "K패스 알뜰교통카드 2026"
+    },
+    {
+      "keyword": "수도세 전기세 가스비 줄이는 실전 방법",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "utility-bill-saving-practical",
+      "focus_keyword": "수도세 전기세 가스비 절약"
+    },
+    {
+      "keyword": "보증금 지키는 법 전세사기 예방 7가지",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "deposit-protection-fraud-prevention",
+      "focus_keyword": "전세사기 예방"
+    },
+    {
+      "keyword": "결혼 비용 절약법 2026 현실적 웨딩 준비",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "wedding-cost-saving-2026",
+      "focus_keyword": "결혼 비용 절약 2026"
+    },
+    {
+      "keyword": "가성비 가전 추천 2026 꼭 필요한 것만",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "budget-appliances-recommendation-2026",
+      "focus_keyword": "가성비 가전 추천 2026"
+    },
+    {
+      "keyword": "신혼집 필수 가전 리스트 예산별 추천",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "newlywed-essential-appliances",
+      "focus_keyword": "신혼집 필수 가전"
+    },
+    {
+      "keyword": "자녀 교육비 절약법 학원비 줄이는 꿀팁",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "child-education-cost-saving",
+      "focus_keyword": "자녀 교육비 절약"
+    },
+    {
+      "keyword": "여행 경비 절약법 2026 국내여행 가성비 루트",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "travel-budget-saving-korea-2026",
+      "focus_keyword": "여행 경비 절약법"
+    },
+    {
+      "keyword": "무료 문화생활 즐기는 법 공연 전시 할인",
+      "type": "traffic",
+      "intent": "informational",
+      "category": "생활비·살림",
+      "pipeline": "autoblog",
+      "slug": "free-culture-events-discounts",
+      "focus_keyword": "무료 문화생활"
+    }
   ]
 }
