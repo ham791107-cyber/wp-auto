@@ -76,6 +76,14 @@ export default function SettingsPage() {
   const [setupLog, setSetupLog] = useState([]);
   const [setupRunning, setSetupRunning] = useState({});
 
+  // System health
+  const [systemHealth, setSystemHealth] = useState(null);
+
+  // Load system health
+  useEffect(() => {
+    fetch('/api/health').then(r => r.json()).then(setSystemHealth).catch(() => null);
+  }, []);
+
   // Load config + setup log
   useEffect(() => {
     if (!site?.id) return;
@@ -302,10 +310,11 @@ export default function SettingsPage() {
         await persistSetupLog(updatedLog);
       } else {
         const debugInfo = data.debug ? ` [repo: ${data.debug.repo}, token: ${data.debug.tokenSet ? 'set' : 'missing'}]` : '';
+        const guideMsg = data.guide ? ` — ${data.guide}` : '';
         const logEntry = {
           action: action.id, label: action.label,
           completed_at: new Date().toISOString(), status: 'failed',
-          error: (data.error || '실패') + debugInfo,
+          error: (data.error || '실패') + debugInfo + guideMsg,
         };
         const updatedLog = [...setupLog.filter(l => l.action !== action.id), logEntry];
         setSetupLog(updatedLog);
@@ -844,6 +853,49 @@ export default function SettingsPage() {
         </div>
       </Card>
 
+      {/* ── System Status ── */}
+      {systemHealth && !systemHealth.ok && (
+        <Card style={{ marginBottom: 20, border: '1px solid var(--red)', background: 'rgba(239,68,68,0.04)' }}>
+          <SectionTitle>
+            {'\u26A0\uFE0F'} 시스템 설정 필요
+          </SectionTitle>
+          <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 12, lineHeight: 1.6 }}>
+            WordPress 자동화 기능을 사용하려면 아래 환경변수를 Vercel (또는 호스팅 플랫폼)에 설정해야 합니다.
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <SystemCheckRow
+              label="GITHUB_TOKEN"
+              ok={systemHealth.checks.github_token}
+              desc="GitHub Personal Access Token (repo + workflow 권한)"
+            />
+            <SystemCheckRow
+              label="GITHUB_REPO"
+              ok={systemHealth.checks.github_repo_custom}
+              desc={systemHealth.checks.github_repo_display}
+              warn={!systemHealth.checks.github_repo_custom}
+              warnMsg="기본값 사용 중 — fork한 경우 본인 저장소로 변경 필요"
+            />
+            <SystemCheckRow
+              label="SUPABASE_URL"
+              ok={systemHealth.checks.supabase_url}
+              desc="Supabase 프로젝트 URL"
+            />
+            <SystemCheckRow
+              label="SUPABASE_ANON_KEY"
+              ok={systemHealth.checks.supabase_anon_key}
+              desc="Supabase Anonymous Key"
+            />
+          </div>
+          <div style={{ marginTop: 14, padding: 12, background: 'var(--input-bg)', borderRadius: 10, fontSize: 11, color: 'var(--text-dim)', lineHeight: 1.7 }}>
+            <strong>셀프 호스팅 설정 가이드:</strong><br/>
+            1. GitHub에서 repo를 fork<br/>
+            2. Settings &rarr; Developer Settings &rarr; Personal Access Token 생성 (repo, workflow 권한)<br/>
+            3. Vercel에 배포 후 환경변수 설정: GITHUB_TOKEN, GITHUB_REPO=your-username/wp-auto<br/>
+            4. Fork한 repo의 Settings &rarr; Secrets에 WP 인증정보 등록
+          </div>
+        </Card>
+      )}
+
       {/* ── Actions ── */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 40 }}>
         <ActionButton onClick={saveSettings} disabled={saving || !site} style={{ flex: 1 }}>
@@ -883,6 +935,25 @@ function DetailRow({ label, value, last }) {
       <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500, maxWidth: '60%', textAlign: 'right', wordBreak: 'break-all' }}>
         {value}
       </span>
+    </div>
+  );
+}
+
+function SystemCheckRow({ label, ok, desc, warn, warnMsg }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'flex-start', gap: 8, padding: '8px 12px',
+      borderRadius: 8, background: ok && !warn ? 'var(--green-bg)' : 'var(--input-bg)',
+    }}>
+      <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>
+        {ok && !warn ? '\u2705' : warn ? '\u26A0\uFE0F' : '\u274C'}
+      </span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', fontFamily: 'monospace' }}>{label}</div>
+        <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>
+          {warn ? warnMsg : ok ? desc : '미설정'}
+        </div>
+      </div>
     </div>
   );
 }

@@ -72,7 +72,10 @@ async function getSiteCredentials(siteId) {
 
 export async function POST(request) {
   if (!GITHUB_TOKEN) {
-    return NextResponse.json({ error: 'GITHUB_TOKEN not configured' }, { status: 500 });
+    return NextResponse.json({
+      error: 'GITHUB_TOKEN이 설정되지 않았습니다.',
+      guide: '셀프 호스팅: Vercel 환경변수에 GITHUB_TOKEN (repo + workflow 권한)과 GITHUB_REPO (your-username/wp-auto)를 설정하세요.',
+    }, { status: 500 });
   }
 
   const user = await verifyAuth(request);
