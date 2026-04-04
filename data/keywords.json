@@ -1,4 +1,6 @@
 {
+  "monetization_stage": 1,
+  "_stage_guide": "1=AdSense승인전(어필리에이트0%), 2=승인후(쿠팡20%), 3=본격수익화(쿠팡+텐핑50%)",
   "keywords": [
     {"keyword": "AI 글쓰기 도구 추천 2026", "type": "traffic", "intent": "informational", "category": "AI 도구 & 생산성", "pipeline": "autoblog", "slug": "ai-writing-tools-comparison-2026", "focus_keyword": "AI 글쓰기 도구 추천"},
     {"keyword": "AI 업무 자동화 도구 가이드", "type": "traffic", "intent": "informational", "category": "AI 도구 & 생산성", "pipeline": "autoblog", "slug": "ai-productivity-tools-guide", "focus_keyword": "AI 업무 자동화"},
