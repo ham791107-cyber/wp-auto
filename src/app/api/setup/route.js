@@ -4,12 +4,28 @@ import { createClient } from '@supabase/supabase-js';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_REPO = process.env.GITHUB_REPO || 'planxs-ai/wp-auto';
 
-const ALLOWED_WORKFLOWS = {
-  'setup-menu': 'setup-menu.yml',
-  'setup-pages': 'setup-pages.yml',
-  'inject-css': 'inject-css.yml',
-  'inject-css-posts': 'inject-css-posts.yml',
-  'publish': 'publish.yml',
+// Each workflow and its allowed input keys (GitHub 422s on unknown inputs)
+const WORKFLOW_CONFIG = {
+  'setup-menu': {
+    file: 'setup-menu.yml',
+    inputs: ['wp_url', 'wp_username', 'wp_app_password', 'site_id'],
+  },
+  'setup-pages': {
+    file: 'setup-pages.yml',
+    inputs: ['wp_url', 'wp_username', 'wp_app_password', 'site_id', 'blog_owner', 'blog_desc', 'contact_email'],
+  },
+  'inject-css': {
+    file: 'inject-css.yml',
+    inputs: ['wp_url', 'wp_username', 'wp_app_password', 'wp_login_password', 'site_id'],
+  },
+  'inject-css-posts': {
+    file: 'inject-css-posts.yml',
+    inputs: ['wp_url', 'wp_username', 'wp_app_password', 'dry_run', 'force_update'],
+  },
+  'publish': {
+    file: 'publish.yml',
+    inputs: ['wp_url', 'wp_username', 'wp_app_password', 'site_id', 'count', 'dry_run', 'pipeline', 'niche'],
+  },
 };
 
 function getSupabaseAdmin() {
@@ -50,6 +66,7 @@ async function getSiteCredentials(siteId) {
     domain: data.domain,
     wp_username: data.config?.wp_username || '',
     wp_app_password: data.config?.wp_app_password || '',
+    wp_login_password: data.config?.wp_login_password || data.config?.wp_app_password || '',
   };
 }
 
@@ -65,12 +82,12 @@ export async function POST(request) {
 
   const { action, siteId, inputs } = await request.json();
 
-  const workflow = ALLOWED_WORKFLOWS[action];
-  if (!workflow) {
+  const config = WORKFLOW_CONFIG[action];
+  if (!config) {
     return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
   }
 
-  // Fetch site credentials from Supabase (NOT hardcoded secrets)
+  // Fetch site credentials from Supabase
   const creds = await getSiteCredentials(siteId);
   if (!creds || !creds.wp_url) {
     return NextResponse.json({
@@ -79,20 +96,28 @@ export async function POST(request) {
     }, { status: 400 });
   }
 
-  // Pass site credentials as workflow inputs so scripts use the correct site
-  const workflowInputs = {
+  // Build all possible values, then filter to only allowed inputs
+  const allValues = {
     ...(inputs || {}),
     wp_url: creds.wp_url,
     wp_username: creds.wp_username,
     wp_app_password: creds.wp_app_password,
-    wp_login_password: creds.wp_login_password || creds.wp_app_password,
+    wp_login_password: creds.wp_login_password,
     site_id: siteId || '',
   };
+
+  // Only include keys that the target workflow defines (prevents GitHub 422)
+  const workflowInputs = {};
+  for (const key of config.inputs) {
+    if (allValues[key] !== undefined && allValues[key] !== '') {
+      workflowInputs[key] = String(allValues[key]);
+    }
+  }
 
   const [owner, repo] = GITHUB_REPO.split('/');
 
   const resp = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflow}/dispatches`,
+    `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${config.file}/dispatches`,
     {
       method: 'POST',
       headers: {
@@ -115,6 +140,6 @@ export async function POST(request) {
   return NextResponse.json({
     error: `GitHub API failed: ${resp.status}`,
     detail: errorBody,
-    debug: { repo: GITHUB_REPO, workflow, site: creds.domain },
+    debug: { repo: GITHUB_REPO, workflow: config.file, site: creds.domain, tokenSet: !!GITHUB_TOKEN },
   }, { status: resp.status });
 }
