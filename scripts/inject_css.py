@@ -100,7 +100,7 @@ def inject_css():
     print(f"  1. {WP_URL}/wp-admin/customize.php 접속")
     print(f"  2. '추가 CSS' 클릭")
     print(f"  3. custom_theme.css 내용 붙여넣기 ({len(CUSTOM_CSS)} bytes)")
-    print(f"  CSS 파일: {css_file}")
+    print(f"  CSS 파일: {_css_file}")
     return False
 
 

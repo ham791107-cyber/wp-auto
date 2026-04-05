@@ -33,6 +33,11 @@ jobs:
           python-version: '3.11'
       - run: pip install requests
       - name: Customizer CSS 주입 (사이트 전체)
+        id: customizer
+        continue-on-error: true
         run: python scripts/inject_css_customizer.py
+      - name: XML-RPC CSS 주입 (Customizer 실패 시 폴백)
+        if: steps.customizer.outcome == 'failure'
+        run: python scripts/inject_css.py
       - name: 기존 글 인라인 CSS 주입 (개별 글)
         run: python scripts/inject_css_to_posts.py
