@@ -418,16 +418,38 @@ def build_etf_blog_prompt(report: dict) -> str:
 <li><strong>내일 주시 포인트:</strong> [모니터링 대상 1줄]</li>
 </ol></div>
 
+<h2>5. 자주 묻는 질문 (FAQ)</h2>
+
+<div class="faq-section">
+<h3>Q. 오늘 3days 전략에서 매수 신호가 나온 ETF는 무엇인가요?</h3>
+<p><strong>A.</strong> (오늘 리포트 기준 매수 신호 ETF명과 신뢰도 수치, 1~2문장으로 직접 답변)</p>
+</div>
+
+<div class="faq-section">
+<h3>Q. 오늘 주도 섹터에 투자할 때 주의할 리스크는 무엇인가요?</h3>
+<p><strong>A.</strong> (오늘 분석된 핵심 리스크 1가지와 대응 방법, 2문장 이내 직접 답변)</p>
+</div>
+
+<div class="faq-section">
+<h3>Q. 3days 전략리포트는 언제 발행되나요?</h3>
+<p><strong>A.</strong> 매 영업일 장 마감(15:30) 후 <strong>KST 16:30</strong>에 자동 발행됩니다. 주말·공휴일은 발행되지 않습니다.</p>
+</div>
+
+<script type="application/ld+json">
+{{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{{"@type":"Question","name":"오늘 3days 전략에서 매수 신호가 나온 ETF는?","acceptedAnswer":{{"@type":"Answer","text":"(매수 신호 ETF명과 신뢰도를 1문장으로 요약)"}}}},{{"@type":"Question","name":"오늘 주도 섹터 투자 리스크는?","acceptedAnswer":{{"@type":"Answer","text":"(핵심 리스크 1가지를 1문장으로 요약)"}}}},{{"@type":"Question","name":"3days 전략리포트 발행 시간은?","acceptedAnswer":{{"@type":"Answer","text":"매 영업일 KST 16:30 자동 발행. 주말·공휴일 제외."}}}}]}}
+</script>
+
 <p style="font-size:13px;color:#94a3b8;margin-top:32px"><em>본 리포트는 투자 참고용이며, 투자 판단의 책임은 본인에게 있습니다.</em></p>
 
 === HTML 규칙 (절대 준수) ===
 - <h1> 금지. <h2>로 시작.
 - <table>: 반드시 <thead>/<tbody> 구조. <th>에 style="width:XX%" 포함.
-- <div class="tip-box">, <div class="key-point"> 활용.
+- <div class="tip-box">, <div class="key-point">, <div class="faq-section"> 활용.
 - <strong> 강조 최소 10개 — 구독자가 스캔할 때 눈에 들어오도록.
 - 마크다운 금지. HTML 태그만.
 - 분량: 2,500~4,000자 (최소 600단어 이상 필수).
 - 주입된 데이터 수치만 인용. 가짜 통계/기관명 날조 절대 금지.
+- FAQ Schema의 text 필드에 실제 오늘 리포트 데이터로 채울 것 (가짜 템플릿 문구 금지).
 - 내부 링크 1개 필수: <a href="https://planx-ai.com/category/finance-invest/">재테크 &amp; 투자 전략 모아보기</a>
 - 외부 링크 1개 필수 (DoFollow): KRX 또는 네이버금융 링크 — 예) <a href="https://finance.naver.com/sise/sise_market_sum.naver" target="_blank" rel="noopener">네이버 금융 시가총액 현황</a>
 """
