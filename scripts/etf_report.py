@@ -640,9 +640,22 @@ _CATEGORY_SLUG_MAP = {
 
 
 def _get_or_create_category_robust(url: str, headers: dict, name: str) -> int | None:
-    """slug 기반 우선 조회 → name 검색 폴백 → 신규 생성 (영문 slug 포함)"""
+    """slug 기반 우선 조회 → name 검색 폴백 → 신규 생성 (영문 slug 포함)
+    0순위: 확정 ID 하드코딩 폴백 (migrate_categories.py 실행 후 확정)
+    """
     import requests
     import html as _html
+
+    # 0순위: 확정 ID (카테고리 마이그레이션으로 확정된 ID — 가장 안정적)
+    _CONFIRMED_IDS = {
+        "재테크 & 투자": 53,
+        "AI 활용 & 도구": 33,
+        "부업 & 수익화": 54,
+    }
+    if name in _CONFIRMED_IDS:
+        confirmed_id = _CONFIRMED_IDS[name]
+        log.info(f"카테고리 ID 확정값 사용: {name} → id={confirmed_id}")
+        return confirmed_id
 
     slug = _CATEGORY_SLUG_MAP.get(name)
 
