@@ -370,7 +370,7 @@ def build_etf_blog_prompt(report: dict) -> str:
 
 # Output Structure (HTML — 100% 준수, 번호 순서대로)
 
-<h2>[{today}] [주도섹터와 핵심종목을 포함한 강렬한 제목]</h2>
+<h2>3days 전략리포트 [{today}] — [주도섹터와 핵심종목을 포함한 강렬한 제목]</h2>
 
 <div class="key-point"><strong>30초 핵심 요약</strong><br/>
 <ul>
@@ -379,9 +379,9 @@ def build_etf_blog_prompt(report: dict) -> str:
 <li><strong>액션:</strong> [구체적 1줄 행동 지침]</li>
 </ul></div>
 
-<p>(도입부 — 오늘 시장에서 가장 중요한 움직임 1가지를 팩트로 훅. KOSPI/KOSDAQ 지수 포함. 3~4문장.)</p>
+<p>오늘의 <strong>3days 전략리포트</strong>입니다. (도입부 — 오늘 시장에서 가장 중요한 움직임 1가지를 팩트로 훅. KOSPI/KOSDAQ 지수 포함. 3~4문장.)</p>
 
-<h2>1. 오늘 돈은 어디로 흘러갔는가?</h2>
+<h2>1. [3days 전략리포트] 오늘 돈은 어디로 흘러갔는가?</h2>
 <p>(주도섹터 분석. 왜 이 섹터가 강세인지 수급 근거와 등급 기반으로 서술. 400~500자.)</p>
 <table>
 <thead><tr><th style="width:15%">섹터</th><th style="width:10%">등급</th><th style="width:15%">등락률</th><th style="width:60%">주도 근거</th></tr></thead>
@@ -426,8 +426,10 @@ def build_etf_blog_prompt(report: dict) -> str:
 - <div class="tip-box">, <div class="key-point"> 활용.
 - <strong> 강조 최소 10개 — 구독자가 스캔할 때 눈에 들어오도록.
 - 마크다운 금지. HTML 태그만.
-- 분량: 2,500~4,000자.
+- 분량: 2,500~4,000자 (최소 600단어 이상 필수).
 - 주입된 데이터 수치만 인용. 가짜 통계/기관명 날조 절대 금지.
+- 내부 링크 1개 필수: <a href="https://planx-ai.com/category/finance-invest/">재테크 &amp; 투자 전략 모아보기</a>
+- 외부 링크 1개 필수 (DoFollow): KRX 또는 네이버금융 링크 — 예) <a href="https://finance.naver.com/sise/sise_market_sum.naver" target="_blank" rel="noopener">네이버 금융 시가총액 현황</a>
 """
     return prompt
 
@@ -708,9 +710,13 @@ def publish_to_wordpress(title: str, content: str, category: str = "재테크 & 
     cat_id = _get_or_create_category_robust(url, headers, category)
 
     today = datetime.now(KST).strftime("%Y-%m-%d")
+    today_compact = datetime.now(KST).strftime("%Y%m%d")
+
+    # 포커스 키워드 (Rank Math SEO)
+    focus_kw = "3days 전략리포트"
 
     # 태그 생성: 고정 + 주도섹터 + 핵심종목
-    tag_names = ["ETF", "ETF 시장분석", "재테크", "섹터분석", "퀀트전략"]
+    tag_names = ["ETF", "ETF 시장분석", "재테크", "섹터분석", "퀀트전략", "3days 전략리포트"]
     if leading_sectors:
         for s in leading_sectors[:3]:
             tag_names.append(s.get("sector", ""))
@@ -723,12 +729,13 @@ def publish_to_wordpress(title: str, content: str, category: str = "재테크 & 
         "title": title,
         "content": content,
         "status": "publish",
+        "slug": f"3days-strategy-report-{today_compact}",
         "categories": [cat_id] if cat_id else [],
         "tags": tag_ids,
         "meta": {
-            "rank_math_focus_keyword": f"ETF 시장분석 {today}",
-            "rank_math_title": f"{title} | PlanX AI",
-            "rank_math_description": f"{today} ETF 섹터 순위, 주도섹터, 시장 신호 종합 분석 리포트",
+            "rank_math_focus_keyword": focus_kw,
+            "rank_math_title": f"{focus_kw} {today} | PlanX AI",
+            "rank_math_description": f"{today} {focus_kw} — 주도섹터 수급 분석, ETF 매수신호, 퀀트 모멘텀 스코어링 종합. 한국 주식시장 장 개장 전 필수 확인.",
         },
     }
 
