@@ -582,20 +582,23 @@ class DynamicKeywordGenerator:
         """가장 저렴한 AI 모델로 키워드 생성"""
         import requests
 
-        # 1순위: Gemini (무료)
+        # 1순위: Gemini (무료) — 모델 폴백: 2.0-flash → 2.0-flash-lite → 1.5-flash
         if GEMINI_KEY:
-            try:
-                resp = requests.post(
-                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}",
-                    headers={"Content-Type": "application/json"},
-                    json={"contents": [{"parts": [{"text": prompt}]}],
-                          "generationConfig": {"temperature": 1.0, "maxOutputTokens": 2000}},
-                    timeout=30
-                )
-                resp.raise_for_status()
-                return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
-            except Exception:
-                pass
+            for _model in ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"]:
+                try:
+                    resp = requests.post(
+                        f"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent?key={GEMINI_KEY}",
+                        headers={"Content-Type": "application/json"},
+                        json={"contents": [{"parts": [{"text": prompt}]}],
+                              "generationConfig": {"temperature": 1.0, "maxOutputTokens": 2000}},
+                        timeout=30
+                    )
+                    if resp.status_code == 404:
+                        continue
+                    resp.raise_for_status()
+                    return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+                except Exception:
+                    continue
 
         # 2순위: DeepSeek (저렴)
         if DEEPSEEK_KEY:
@@ -1306,37 +1309,47 @@ class ContentGenerator:
 
     def _call_gemini(self, prompt):
         import requests
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                log.info(f"Gemini 초안 생성 중...{f' (재시도 {attempt+1}/{max_retries})' if attempt else ''}")
-                resp = requests.post(
-                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_KEY}",
-                    headers={"Content-Type": "application/json"},
-                    json={"contents": [{"parts": [{"text": prompt}]}],
-                          "generationConfig": {"temperature": 0.8, "maxOutputTokens": 5000}},
-                    timeout=180
-                )
-                if resp.status_code == 429:
-                    wait = 30 * (attempt + 1)
-                    log.warning(f"Gemini 429 Rate Limit → {wait}초 대기 후 재시도")
-                    time.sleep(wait)
-                    continue
-                resp.raise_for_status()
-                data = resp.json()
-                content = data["candidates"][0]["content"]["parts"][0]["text"]
-                usage = data.get("usageMetadata", {})
-                self._log_cost("gemini-2.0-flash", "google", "content",
-                              usage.get("promptTokenCount", 0), usage.get("candidatesTokenCount", 0))
-                return content, "gemini-2.0-flash"
-            except Exception as e:
-                if "429" in str(e) and attempt < max_retries - 1:
-                    wait = 30 * (attempt + 1)
-                    log.warning(f"Gemini Rate Limit → {wait}초 대기 후 재시도")
-                    time.sleep(wait)
-                    continue
-                log.warning(f"Gemini 실패: {e}")
-                return None, None
+        # 모델 우선순위: 2.0-flash → 2.0-flash-lite → 1.5-flash
+        models = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"]
+        for model in models:
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    log.info(f"Gemini ({model}) 생성 중...{f' (재시도 {attempt+1}/{max_retries})' if attempt else ''}")
+                    resp = requests.post(
+                        f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_KEY}",
+                        headers={"Content-Type": "application/json"},
+                        json={"contents": [{"parts": [{"text": prompt}]}],
+                              "generationConfig": {"temperature": 0.8, "maxOutputTokens": 5000}},
+                        timeout=180
+                    )
+                    if resp.status_code == 429:
+                        wait = 30 * (attempt + 1)
+                        log.warning(f"Gemini 429 Rate Limit → {wait}초 대기 후 재시도")
+                        time.sleep(wait)
+                        continue
+                    if resp.status_code == 404:
+                        log.warning(f"Gemini {model} 404 → 다음 모델 시도")
+                        break  # 다음 모델로
+                    resp.raise_for_status()
+                    data = resp.json()
+                    content = data["candidates"][0]["content"]["parts"][0]["text"]
+                    usage = data.get("usageMetadata", {})
+                    self._log_cost(model, "google", "content",
+                                  usage.get("promptTokenCount", 0), usage.get("candidatesTokenCount", 0))
+                    return content, model
+                except Exception as e:
+                    if "429" in str(e) and attempt < max_retries - 1:
+                        wait = 30 * (attempt + 1)
+                        log.warning(f"Gemini Rate Limit → {wait}초 대기 후 재시도")
+                        time.sleep(wait)
+                        continue
+                    if "404" in str(e):
+                        log.warning(f"Gemini {model} 404 → 다음 모델 시도")
+                        break  # 다음 모델로
+                    log.warning(f"Gemini 실패: {e}")
+                    return None, None
+        log.warning("Gemini 전체 모델 실패")
         return None, None
 
     def _call_deepseek(self, prompt):
