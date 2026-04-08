@@ -414,9 +414,47 @@ export default function SettingsPage() {
     refreshProfile();
   };
 
+  // 스케줄 GitHub 동기화 상태
+  const [scheduleSync, setScheduleSync] = useState(null); // null | 'syncing' | 'success' | 'failed'
+  const [scheduleSyncError, setScheduleSyncError] = useState('');
+
+  const syncScheduleToGitHub = async () => {
+    if (!site?.id || dailyCount < 1 || scheduleTimes.length < 1) return;
+    setScheduleSync('syncing');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || ''}`,
+        },
+        body: JSON.stringify({
+          siteId: site.id,
+          scheduleTimes: scheduleTimes.slice(0, dailyCount),
+          dailyCount,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setScheduleSync('success');
+        setScheduleSyncError('');
+      } else {
+        setScheduleSync('failed');
+        setScheduleSyncError(data.error + (data.guide ? ` — ${data.guide}` : ''));
+      }
+    } catch {
+      setScheduleSync('failed');
+      setScheduleSyncError('네트워크 오류');
+    }
+  };
+
   const saveSettings = async () => {
     setSaving(true);
-    try { await saveSettingsInner(); } catch { /* silent */ }
+    try {
+      await saveSettingsInner();
+      await syncScheduleToGitHub();
+    } catch { /* silent */ }
     setSaving(false);
   };
 
@@ -747,8 +785,23 @@ export default function SettingsPage() {
               ))}
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 8, padding: '6px 10px', background: 'var(--input-bg)', borderRadius: 8 }}>
-              {'\u23F0'} KST(한국 표준시) 기준. 저장 후 다음 발행부터 적용됩니다.
+              {'\u23F0'} KST(한국 표준시) 기준. 저장 시 GitHub 스케줄에 자동 반영됩니다.
             </div>
+            {scheduleSync === 'success' && (
+              <div style={{ fontSize: 11, color: 'var(--green)', marginTop: 6, padding: '6px 10px', background: 'var(--green-bg)', borderRadius: 8 }}>
+                {'\u2705'} 발행 스케줄이 GitHub에 반영되었습니다.
+              </div>
+            )}
+            {scheduleSync === 'failed' && (
+              <div style={{ fontSize: 11, color: 'var(--red)', marginTop: 6, padding: '6px 10px', background: 'var(--red-bg)', borderRadius: 8 }}>
+                {'\u274C'} GitHub 동기화 실패: {scheduleSyncError}
+              </div>
+            )}
+            {scheduleSync === 'syncing' && (
+              <div style={{ fontSize: 11, color: 'var(--accent)', marginTop: 6 }}>
+                GitHub에 스케줄 반영 중...
+              </div>
+            )}
           </div>
         </div>
 
