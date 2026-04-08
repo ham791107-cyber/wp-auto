@@ -58,10 +58,11 @@ body:not(.sidebar) .grid-container { max-width: 1400px !important; }
   transform: translateY(-2px);
 }
 
-/* 글 제목 */
+/* 글 제목 — 왼쪽 정렬 고정 */
 .entry-title, .entry-title a {
   font-size: 20px !important; font-weight: 800 !important;
   color: #1a1a2e !important; text-decoration: none !important; line-height: 1.4 !important;
+  text-align: left !important; padding-left: 0 !important; margin-left: 0 !important;
 }
 .entry-title a:hover { color: #6366f1 !important; }
 
@@ -92,15 +93,16 @@ body:not(.sidebar) .grid-container { max-width: 1400px !important; }
 .single .grid-container { max-width: 1400px !important; }
 .single .inside-article { max-width: 100% !important; padding: 32px 24px !important; }
 .single .entry-content { max-width: 100% !important; margin: 0 auto !important; padding: 0 8px !important; }
-.single .entry-title { font-size: 26px !important; }
+.single .entry-title { font-size: 26px !important; text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; }
 .single .entry-meta { margin-bottom: 24px !important; }
+.single .entry-header { padding-left: 0 !important; margin-left: 0 !important; text-align: left !important; }
 .entry-content img { max-width: 100% !important; height: auto !important; border-radius: 8px !important; }
 .entry-content table { width: 100% !important; border-collapse: collapse; font-size: 14px !important; display: table !important; table-layout: auto !important; }
-.entry-content h2 { border-bottom: none !important; }
+.entry-content h2 { border-bottom: none !important; text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; }
+.entry-content h3 { text-align: left !important; }
 .entry-content th, .entry-content td { padding: 10px 12px !important; border: 1px solid #e2e8f0 !important; }
-.entry-content th { font-weight: 700 !important; color: #1a1a2e !important; }
-.entry-content thead th { background: #6366f1 !important; color: #fff !important; }
-.entry-content table[style*="box-shadow"] thead th { background: none !important; }
+.entry-content th { font-weight: 700 !important; color: #1a1a2e !important; background: #f1f5f9 !important; }
+.entry-content thead th { background: #f1f5f9 !important; color: #1a1a2e !important; border-bottom: 2px solid #6366f1 !important; }
 
 /* PC: 사이드바 숨기고 본문 전폭 */
 .widget-area, #secondary, aside#right-sidebar { display: none !important; }
