@@ -69,6 +69,7 @@ jobs:
     timeout-minutes: 20
 
     env:
+      ALLOWED_SITE_IDS: "${siteId}"
       GROK_API_KEY: \${{ secrets.GROK_API_KEY }}
       GEMINI_API_KEY: \${{ secrets.GEMINI_API_KEY }}
       CLAUDE_API_KEY: \${{ secrets.CLAUDE_API_KEY }}

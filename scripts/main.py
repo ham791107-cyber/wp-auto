@@ -461,8 +461,9 @@ KEYWORD_GEN_PROMPT = """당신은 블로그 키워드 전략가입니다.
 === 반드시 지켜야 할 규칙 ===
 1. 각 주제는 검색 가능한 구체적 키워드여야 합니다
 2. 아래 "이미 발행된 제목"과 동일하거나 유사한 주제는 절대 금지
-3. 고유 시드 "{seed}"를 활용하여 독창적인 관점을 포함하세요
+3. 기존 주제와 다른 독창적인 관점을 포함하세요
 4. 한국어로 작성, 2026년 기준 최신 정보
+5. 출력에 내부 식별자, 해시, 코드 등 메타데이터를 절대 포함하지 마세요
 
 === 이미 발행된 제목 (피해야 할 주제) ===
 {used_titles}
@@ -560,17 +561,12 @@ class DynamicKeywordGenerator:
         random.shuffle(domains)
         domain_str = ", ".join(domains[:5])
 
-        # 고유 시드: site_id + niche + timestamp + random
-        seed = hashlib.md5(
-            f"{SITE_ID}-{niche}-{datetime.now(KST).isoformat()}-{random.random()}".encode()
-        ).hexdigest()[:12]
-
         # 최근 발행 제목 (최대 30개)
         used_str = "\n".join(f"- {t}" for t in self.used_titles[:30]) or "(없음)"
 
         prompt = KEYWORD_GEN_PROMPT.format(
             count=count, niche=niche, angle=angle, format=fmt,
-            target=target, domains=domain_str, seed=seed, used_titles=used_str
+            target=target, domains=domain_str, used_titles=used_str
         )
 
         # AI로 키워드 생성 (가장 저렴한 모델 사용)
@@ -593,7 +589,7 @@ class DynamicKeywordGenerator:
                     kw["_angle"] = angle
                     kw["_format"] = fmt
                     kw["_target"] = target
-                    kw["_seed"] = seed
+                    kw["_seed"] = ""
                     result.append(kw)
                 log.info(f"  [{niche}] {len(result)}개 키워드 생성: {[k['keyword'][:20] for k in result]}")
                 return result
@@ -4269,14 +4265,23 @@ def main():
         run_etf_report(report_type="blog-ready", dry_run=args.dry_run)
         return
 
-    # ── scheduled 모드: Supabase에서 전체 활성 사이트 조회 → 순회 발행 ──
+    # ── 허용 사이트 화이트리스트 ──
+    # ALLOWED_SITE_IDS 환경변수: 쉼표 구분 (예: "site-1,site-123")
+    # 미설정 시 --site-id로 지정된 단일 사이트만 허용 (scheduled 모드 차단)
+    _allowed_env = os.environ.get("ALLOWED_SITE_IDS", "")
+    ALLOWED_SITE_IDS = {s.strip() for s in _allowed_env.split(",") if s.strip()} if _allowed_env else set()
+
     if args.mode == "scheduled":
+        if not ALLOWED_SITE_IDS:
+            log.error("ALLOWED_SITE_IDS 환경변수가 설정되지 않아 scheduled 모드를 실행할 수 없습니다.")
+            sys.exit(1)
         sites = _get_all_active_sites()
+        sites = [s for s in sites if s.get("id") in ALLOWED_SITE_IDS]
         if not sites:
-            log.warning("활성 사이트 없음. Supabase sites 테이블을 확인하세요.")
+            log.warning("허용된 활성 사이트 없음.")
             sys.exit(0)
 
-        log.info(f"═══ Scheduled Mode: {len(sites)}개 활성 사이트 발행 시작 ═══")
+        log.info(f"═══ Scheduled Mode: {len(sites)}개 허용 사이트 발행 시작 ═══")
         for site in sites:
             site_id = site.get("id", "unknown")
             domain = site.get("domain", site.get("wp_url", ""))
@@ -4295,6 +4300,9 @@ def main():
 
     # ── 특정 사이트 지정 ──
     if args.site_id:
+        if ALLOWED_SITE_IDS and args.site_id not in ALLOWED_SITE_IDS:
+            log.error(f"사이트 '{args.site_id}'는 이 리포에서 발행이 허용되지 않습니다. 허용: {ALLOWED_SITE_IDS}")
+            sys.exit(1)
         global SITE_ID
         SITE_ID = args.site_id
         site = _get_site_config(args.site_id)
