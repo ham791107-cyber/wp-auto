@@ -1,21 +1,5 @@
 {
-  "coupang": {
-    "노트북": [
-      {"name": "가성비 노트북 TOP5", "url": "YOUR_COUPANG_DEEPLINK_노트북"}
-    ],
-    "청소기": [
-      {"name": "무선청소기 추천", "url": "YOUR_COUPANG_DEEPLINK_청소기"}
-    ],
-    "제습기": [
-      {"name": "제습기 추천", "url": "YOUR_COUPANG_DEEPLINK_제습기"}
-    ],
-    "건조기": [
-      {"name": "건조기 추천", "url": "YOUR_COUPANG_DEEPLINK_건조기"}
-    ],
-    "에어컨": [
-      {"name": "에어컨 추천", "url": "YOUR_COUPANG_DEEPLINK_에어컨"}
-    ]
-  },
+  "coupang": {},
   "cpa": {},
   "adsense_slots": []
 }

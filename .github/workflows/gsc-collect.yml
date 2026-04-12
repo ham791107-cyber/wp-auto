@@ -2,14 +2,23 @@ name: GSC Data Collection
 
 on:
   schedule:
-    # 매일 KST 06:00 (UTC 21:00) — 발행 전 수집
-    - cron: '0 21 * * *'
+    # 매일 KST 07:00 (UTC 22:00) — 발행 전 수집
+    - cron: '0 22 * * *'
   workflow_dispatch:
+    inputs:
+      site_id:
+        description: 'Site ID (빈값=전체)'
+        required: false
+        default: ''
 
 jobs:
-  collect:
+  # ═══ planx-ai.com ═══
+  planx-ai:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    if: >-
+      (github.event_name == 'schedule')
+      || (github.event_name == 'workflow_dispatch' && (github.event.inputs.site_id == '' || github.event.inputs.site_id == 'site-1'))
 
     steps:
       - uses: actions/checkout@v4
@@ -20,14 +29,63 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: |
-          pip install requests google-auth google-api-python-client
+        run: pip install requests google-auth google-api-python-client
 
-      - name: Run GSC Collector
+      - name: Check credentials
+        id: creds
+        run: |
+          if [ -z "${{ secrets.GSC_CREDENTIALS_JSON }}" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "⚠️ GSC_CREDENTIALS_JSON not set — skipping planx-ai"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run GSC Collector (planx-ai)
+        if: steps.creds.outputs.available == 'true'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          SITE_ID: ${{ secrets.SITE_ID }}
+          SITE_ID: site-1
           GSC_CREDENTIALS_JSON: ${{ secrets.GSC_CREDENTIALS_JSON }}
           GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
+        run: python scripts/gsc_collector.py
+
+  # ═══ bomissu.com ═══
+  bomissu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: >-
+      (github.event_name == 'schedule')
+      || (github.event_name == 'workflow_dispatch' && (github.event.inputs.site_id == '' || github.event.inputs.site_id == 'site-1775046458524'))
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests google-auth google-api-python-client
+
+      - name: Check credentials
+        id: creds
+        run: |
+          if [ -z "${{ secrets.BOMISSU_GSC_CREDENTIALS_JSON }}" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "⚠️ BOMISSU_GSC_CREDENTIALS_JSON not set — skipping bomissu"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run GSC Collector (bomissu)
+        if: steps.creds.outputs.available == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SITE_ID: site-1775046458524
+          GSC_CREDENTIALS_JSON: ${{ secrets.BOMISSU_GSC_CREDENTIALS_JSON }}
+          GSC_SITE_URL: ${{ secrets.BOMISSU_GSC_SITE_URL }}
         run: python scripts/gsc_collector.py

@@ -114,13 +114,23 @@ jobs:
         run: |
           git config user.email "bot@autoblog.com"
           git config user.name "AutoBlog Bot"
-          git add data/used_keywords.json || true
-          git stash --include-untracked || true
-          git pull --rebase || true
-          git stash pop || true
-          git add data/used_keywords.json || true
-          git diff --staged --quiet || git commit -m "chore: update used keywords [planx-ai] $(date +%Y-%m-%d)"
-          git push || true
+
+          for attempt in 1 2 3; do
+            git add data/used_keywords.json || true
+            git stash --include-untracked || true
+            git pull --rebase || true
+            git stash pop || true
+            git add data/used_keywords.json || true
+            git diff --staged --quiet && echo "No changes to commit" && break
+            git commit -m "chore: update used keywords [planx-ai] $(date +%Y-%m-%d)"
+            if git push; then
+              echo "Push succeeded on attempt $attempt"
+              break
+            fi
+            echo "Push failed on attempt $attempt, retrying in 5s..."
+            git pull --rebase || true
+            sleep 5
+          done
 
   # ═══ bomissu.com ═══
   bomissu:
@@ -141,9 +151,9 @@ jobs:
       UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-      WP_URL: ${{ secrets.WP_URL }}
-      WP_USERNAME: ${{ secrets.WP_USERNAME }}
-      WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+      WP_URL: ${{ secrets.BOMISSU_WP_URL || secrets.WP_URL }}
+      WP_USERNAME: ${{ secrets.BOMISSU_WP_USERNAME || secrets.WP_USERNAME }}
+      WP_APP_PASSWORD: ${{ secrets.BOMISSU_WP_APP_PASSWORD || secrets.WP_APP_PASSWORD }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -188,10 +198,20 @@ jobs:
         run: |
           git config user.email "bot@autoblog.com"
           git config user.name "AutoBlog Bot"
-          git add data/used_keywords.json || true
-          git stash --include-untracked || true
-          git pull --rebase || true
-          git stash pop || true
-          git add data/used_keywords.json || true
-          git diff --staged --quiet || git commit -m "chore: update used keywords [bomissu] $(date +%Y-%m-%d)"
-          git push || true
+
+          for attempt in 1 2 3; do
+            git add data/used_keywords.json || true
+            git stash --include-untracked || true
+            git pull --rebase || true
+            git stash pop || true
+            git add data/used_keywords.json || true
+            git diff --staged --quiet && echo "No changes to commit" && break
+            git commit -m "chore: update used keywords [bomissu] $(date +%Y-%m-%d)"
+            if git push; then
+              echo "Push succeeded on attempt $attempt"
+              break
+            fi
+            echo "Push failed on attempt $attempt, retrying in 5s..."
+            git pull --rebase || true
+            sleep 5
+          done
